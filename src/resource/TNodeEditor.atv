@@ -1,0 +1,280 @@
+// this is a generated file
+
+toad::TDialogLayout {
+  width = 321
+  height = 489
+  drawfocus = false
+  toad::TFigureModel {
+    toad::TFWindow {
+      x = 8
+      y = 428
+      w = 21
+      h = 17
+      title = "interface_add"
+      label = "+"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 32
+      y = 428
+      w = 21
+      h = 17
+      title = "interface_del"
+      label = "-"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 8
+      y = 288
+      w = 305
+      h = 137
+      title = "interfaces"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 8
+      y = 196
+      w = 97
+      h = 13
+      title = "ipforwarding"
+      label = "IP forwarding"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 144
+      w = 233
+      h = 21
+      title = "mgmt"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 124
+      w = 233
+      h = 17
+      title = "mgmtaddr"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 132
+      y = 456
+      w = 57
+      h = 25
+      title = "apply"
+      label = "Apply"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 200
+      y = 456
+      w = 57
+      h = 25
+      title = "cancel"
+      label = "Cancel"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 260
+      y = 456
+      w = 57
+      h = 25
+      title = "ok"
+      label = "OK"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 48
+      w = 233
+      h = 17
+      title = "sysContact"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 88
+      w = 233
+      h = 17
+      title = "sysDescr"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 68
+      w = 233
+      h = 17
+      title = "sysLocation"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 28
+      w = 233
+      h = 17
+      title = "sysName"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 80
+      y = 8
+      w = 233
+      h = 17
+      title = "sysObjectID"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 116
+      y = 216
+      w = 105
+      h = 13
+      title = "topo_bridge"
+      label = "bridge"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 8
+      y = 216
+      w = 109
+      h = 17
+      title = "topo_connector"
+      label = "connector"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 8
+      y = 232
+      w = 105
+      h = 13
+      title = "topo_gateway"
+      label = "gateway"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 8
+      y = 248
+      w = 157
+      h = 13
+      title = "topo_removed"
+      label = "removed from topology"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 116
+      y = 232
+      w = 105
+      h = 13
+      title = "topo_star_hub"
+      label = "star type hub"
+      taborder = 0
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 12
+      w = 52
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "ObjectID"
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 32
+      w = 34
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Name"
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 52
+      w = 47
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Contact"
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 72
+      w = 50
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Location"
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 92
+      w = 66
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Description"
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 128
+      w = 46
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Address"
+    }
+    toad::TFText {
+      linecolor ={ 0 0 0 }
+      x = 8
+      y = 148
+      w = 50
+      h = 15
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Protocol"
+    }
+    toad::TFFrame {
+      linecolor ={ 0 0 0 }
+      x = 4
+      y = 116
+      w = 313
+      h = 57
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Management"
+    }
+    toad::TFFrame {
+      linecolor ={ 0 0 0 }
+      x = 4
+      y = 184
+      w = 313
+      h = 85
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Node Topology"
+    }
+    toad::TFFrame {
+      linecolor ={ 0 0 0 }
+      x = 4
+      y = 280
+      w = 313
+      h = 169
+      fontname = "arial,helvetica,sans-serif:size=12"
+      text = "Interfaces"
+    }
+    toad::TFWindow {
+      x = 8
+      y = 456
+      w = 53
+      h = 25
+      title = "lock"
+      label = "Lock"
+      taborder = 0
+    }
+    toad::TFWindow {
+      x = 72
+      y = 456
+      w = 57
+      h = 25
+      title = "reset"
+      label = "Reset"
+      taborder = 0
+    }
+  }
+}

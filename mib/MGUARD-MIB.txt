@@ -1,0 +1,3892 @@
+MGUARD-MIB DEFINITIONS ::= BEGIN
+
+-- Copyright 2003-2004 Innominate Security Technologies AG
+-- $Id: mGuard-MIB.txt,v 1.10.2.1 2004/08/05 13:37:40 ljaenicke Exp $
+
+IMPORTS
+  enterprises
+    FROM RFC1155-SMI
+  OBJECT-TYPE
+    FROM RFC-1212
+  RowStatus, TruthValue, MacAddress
+    FROM SNMPv2-TC
+  DisplayString
+    FROM RFC1213-MIB;
+
+  innominate       OBJECT IDENTIFIER ::= { enterprises 15450 }
+  mGuard           OBJECT IDENTIFIER ::= { innominate  1 }
+  
+  mGuardVPN        OBJECT IDENTIFIER ::= { mGuard 1 }
+  mGuardFirewall   OBJECT IDENTIFIER ::= { mGuard 2 }    
+  mGuardNetwork    OBJECT IDENTIFIER ::= { mGuard 3 }
+  mGuardSystem     OBJECT IDENTIFIER ::= { mGuard 4 }
+  mGuardSNMP       OBJECT IDENTIFIER ::= { mGuard 5 }
+  mGuardNTP        OBJECT IDENTIFIER ::= { mGuard 6 }  
+  mGuardUpdate     OBJECT IDENTIFIER ::= { mGuard 7 }
+  mGuardLogging    OBJECT IDENTIFIER ::= { mGuard 9 }
+  mGuardContFilt   OBJECT IDENTIFIER ::= { mGuard 10 }
+
+--
+-- IPsec: Local Certificate
+--
+
+ mGuardVPNMachine OBJECT IDENTIFIER ::= { mGuardVPN 1 }
+   
+ mGuardVPNMachineCert OBJECT-TYPE
+   SYNTAX OCTET STRING 
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+     "Machine certificate and private key of the mGuard."
+ ::= { mGuardVPNMachine 1 }      
+      
+ mGuardVPNMachinePrivate OBJECT-TYPE
+   SYNTAX OCTET STRING
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+     "Private key"
+ ::= { mGuardVPNMachine 2 }      
+ 
+
+--
+-- IPsec: Connection
+--
+
+ mGuardVPNConnectionTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardVPNConnectionEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+    "A table containing the configuration of
+    the mGuard's VPN connections."
+ ::= { mGuardVPN 2 }
+
+ mGuardVPNConnectionEntry OBJECT-TYPE
+    SYNTAX MGuardVPNConnectionEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+       "Configuration of a single VPN connection."
+    INDEX { mGuardVPNconIndex }
+ ::= { mGuardVPNConnectionTable 1 }
+            
+ MGuardVPNConnectionEntry ::= SEQUENCE {
+    mGuardVPNconIndex    INTEGER,
+    mGuardVPNconName	 DisplayString,
+    mGuardVPNconEnabled  INTEGER,
+    mGuardVPNremGW	 DisplayString,
+    mGuardVPNconType	 INTEGER,
+    mGuardVPNlocalNet    IpAddress,
+    mGuardVPNlocalMask   IpAddress,
+    mGuardVPNremoteNet   IpAddress,
+    mGuardVPNremoteMask  IpAddress,
+    mGuardVPNauthType    INTEGER,
+    mGuardVPNpsk         DisplayString,
+    mGuardVPNx509        OCTET STRING,
+    mGuardVPNikeDH       INTEGER,        
+    mGuardVPNikeHash     INTEGER,
+    mGuardVPNipsecHash   INTEGER,
+    mGuardVPNikeAlg      INTEGER,
+    mGuardVPNipsecAlg    INTEGER,  
+    mGuardVPNpfs         INTEGER,
+    mGuardVPNconStartUp  INTEGER,
+    mGuardVPNvirtIPMethod INTEGER,
+    mGuardVPNvirtIP      IpAddress,
+    mGuardVPNFWLogDefIn  INTEGER,
+    mGuardVPNFWLogDefOut  INTEGER,
+    mGuardVPNProtoAH     INTEGER,
+    mGuardVPNProtoESP    INTEGER,
+    mGuardVPNComp        INTEGER, 
+    mGuardVPNLocalIDMode INTEGER,
+    mGuardVPNLocalID       DisplayString,
+    mGuardVPNRemoteIDMode  INTEGER, 
+    mGuardVPNRemoteID      DisplayString,
+    mGuardVPNIkeLifetime   INTEGER,
+    mGuardVPNIpsecLifetime INTEGER,
+    mGuardVPNRekeyMargin   INTEGER,
+    mGuardVPNRekeyFuzz     INTEGER,
+    mGuardVPNKeyingTries   INTEGER,
+    mGuardVPNRekey         INTEGER,
+    mGuardVPNDPDAction     INTEGER,
+    mGuardVPNDPDDelay      INTEGER,
+    mGuardVPNDPDTimeout    INTEGER,  
+    mGuardVPNRowStatus   RowStatus
+ }
+
+   mGuardVPNconIndex OBJECT-TYPE
+      SYNTAX INTEGER (1..100)
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+         "Index to identify the connection."
+   ::= { mGuardVPNConnectionEntry 1 }            
+              
+   mGuardVPNconName OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Descriptive name of the connection."
+   ::= { mGuardVPNConnectionEntry 2 }
+
+   mGuardVPNconEnabled OBJECT-TYPE
+      SYNTAX INTEGER {
+                        enabled(1),
+                        disabled(2)
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Is the connection enabled: yes / no ."
+   ::= { mGuardVPNConnectionEntry 3 }
+
+   mGuardVPNremGW OBJECT-TYPE
+      SYNTAX DisplayString 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Remote VPN gateway."
+   ::= { mGuardVPNConnectionEntry 4 }       
+                                   
+   mGuardVPNconType OBJECT-TYPE
+      SYNTAX INTEGER {
+			transport(1),
+			tunnel(2),
+			l2tp-w2k(3),
+			l2tp-ssh(4)
+		     } 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Type of VPN connection: transport / tunnel / l2tp-w2k / l2tp-ssh" 
+   ::= { mGuardVPNConnectionEntry 5 }
+ 
+   mGuardVPNlocalNet OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Local net address for VPN connection in tunnel mode."
+   ::= { mGuardVPNConnectionEntry 6}
+   
+                                                                                                                                       
+   mGuardVPNlocalMask OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "Local netmask for VPN connection in tunnel mode."
+   ::= { mGuardVPNConnectionEntry 7 }
+
+   mGuardVPNremoteNet OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "Remote net address for VPN connection in tunnel mode."
+   ::= { mGuardVPNConnectionEntry 8 }
+
+   mGuardVPNremoteMask OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "Remote netmask for VPN connection in tunnel mode."
+   ::= { mGuardVPNConnectionEntry 9}                                                                                            
+
+   mGuardVPNauthType OBJECT-TYPE
+     SYNTAX INTEGER {
+			psk(1),
+			x509(2)
+		    } 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Authentification mode of the VPN connection: psk / x509"
+   ::= { mGuardVPNConnectionEntry 10 }
+                                                                                                       
+    mGuardVPNpsk OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+       "Pre Shared Secret"
+    ::= { mGuardVPNConnectionEntry 11 }
+    
+     mGuardVPNx509 OBJECT-TYPE
+      SYNTAX OCTET STRING
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+       "X.509 certificate"
+    ::= { mGuardVPNConnectionEntry 12 }
+
+    mGuardVPNikeDH OBJECT-TYPE
+     SYNTAX INTEGER{
+                      all(1),
+                      modp1024(2),
+                      modp1536(3),
+                      modp2048(4),
+                      modp3072(5),
+                      modp4096(6)
+                   }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "IKE DH algorithm."
+     ::= { mGuardVPNConnectionEntry 13 }                        
+   
+    mGuardVPNikeHash OBJECT-TYPE
+      SYNTAX INTEGER {
+			all(1),
+			md5(2),
+			sha1(3)
+		     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "IKE hash algorithm: all / md5 / sha1"
+    ::= { mGuardVPNConnectionEntry 14 }
+ 
+    mGuardVPNipsecHash OBJECT-TYPE
+       SYNTAX INTEGER {
+			all(1),
+			md5(2),
+			sha1(3)
+		     }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+         "ipsec hash algorithm: all / md5 / sha1"
+    ::= { mGuardVPNConnectionEntry 15 }
+
+     mGuardVPNikeAlg OBJECT-TYPE
+        SYNTAX INTEGER {
+			des(1),
+			tripledes168(2),
+			aes128(3),
+			aes192(4),
+			aes256(5)
+		     }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+          "IKE encryption algorithm: des / 3des168 / aes128 / aes192 / aes256"
+    ::= { mGuardVPNConnectionEntry 16 }
+  
+     mGuardVPNipsecAlg OBJECT-TYPE
+         SYNTAX INTEGER {
+			des(1),
+			tripledes168(2),
+			aes128(3),
+			aes192(4),
+			aes256(5),
+			null(6)
+		     }
+         ACCESS read-write
+         STATUS mandatory
+         DESCRIPTION
+           "ipsec encryption algorithm: des/ 3des168 / aes128 / aes192 / aes256 / null"
+    ::= { mGuardVPNConnectionEntry 17 }
+
+    mGuardVPNpfs OBJECT-TYPE
+         SYNTAX INTEGER {
+			no(1),
+			all(2),
+			modp1024(3),
+			modp1536(4),
+			modp2048(5),
+			modp3072(6),
+                        modp4096(7)
+		     }
+         ACCESS read-write
+         STATUS mandatory
+         DESCRIPTION
+           "ipsec perfect forward secrecy: no / all / modp1024 / modp1536 / modp2048 / modp3072 / modp4096"
+    ::= { mGuardVPNConnectionEntry 18 }
+    
+    mGuardVPNconStartUp OBJECT-TYPE
+      SYNTAX INTEGER {
+			initiate(1),
+			waitForRemote(2)
+		     } 
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "Should the mGuard realize the startup of the VPN connection or wait
+         for connection startup of the  remote gateway: yes / no ." 
+    ::= {  mGuardVPNConnectionEntry 19 }
+    
+   mGuardVPNvirtIPMethod OBJECT-TYPE
+       SYNTAX INTEGER{
+              static(1),
+              dhcp-over-ipsec(2)
+              }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+         "This option isn't implemented yet."
+     ::= {  mGuardVPNConnectionEntry 20 } 
+  
+    mGuardVPNvirtIP OBJECT-TYPE
+       SYNTAX IpAddress 
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+         "virtual ip to use"
+     ::= {  mGuardVPNConnectionEntry 21 }
+   
+     mGuardVPNFWLogDefIn OBJECT-TYPE
+       SYNTAX INTEGER{
+                      yes(1),
+    		      no(2)
+ 	             }
+	ACCESS read-write
+	STATUS mandatory
+        DESCRIPTION
+	   "Log entries for undefined incoming connection attemps ?"
+     ::= { mGuardVPNConnectionEntry 22 }
+
+     mGuardVPNFWLogDefOut OBJECT-TYPE
+       SYNTAX INTEGER{
+                      yes(1),
+    		      no(2)
+ 	             }
+	ACCESS read-write
+	STATUS mandatory
+        DESCRIPTION
+	   "Log entries for undefined outgoing connection attemps ?"
+     ::= { mGuardVPNConnectionEntry 23 }
+
+
+     mGuardVPNProtoAH OBJECT-TYPE
+       SYNTAX INTEGER{
+                      yes(1),
+                      no(2)
+                     }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+        "Use the AH protocoll. Only 'no' is supported."
+     ::= { mGuardVPNConnectionEntry 24 }
+
+     mGuardVPNProtoESP OBJECT-TYPE
+       SYNTAX INTEGER{
+                      yes(1),
+                      no(2)
+                     }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+        "Use the ESP protocoll. Only 'yes' is supported."
+     ::= { mGuardVPNConnectionEntry 25 }
+
+     mGuardVPNComp OBJECT-TYPE
+       SYNTAX INTEGER{
+                      yes(1),
+                      no(2)
+                     }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+        "Use IPsec compression. Only 'no' is supported."
+     ::= { mGuardVPNConnectionEntry 26 }
+
+     mGuardVPNLocalIDMode OBJECT-TYPE
+      SYNTAX INTEGER{
+                      auto(1),
+                      freeswan(2)
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+       "Mode for local ID. This option isn't implemented yet."
+     ::= { mGuardVPNConnectionEntry 27 }
+
+     mGuardVPNLocalID OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write    
+      STATUS mandatory
+      DESCRIPTION
+         "Local ID." 
+     ::= { mGuardVPNConnectionEntry 28 }
+
+     mGuardVPNRemoteIDMode OBJECT-TYPE
+      SYNTAX INTEGER{
+                      auto(1),
+                      freeswan(2)
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+       "Mode for remote ID. This option isn't implemented yet."
+     ::= { mGuardVPNConnectionEntry 29 }
+
+     mGuardVPNRemoteID OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Local ID."
+     ::= { mGuardVPNConnectionEntry 30 }
+
+    mGuardVPNIkeLifetime OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "ISAKMP SA  lifetime (seconds)."  
+    ::= { mGuardVPNConnectionEntry 31 }
+
+    mGuardVPNIpsecLifetime OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "IPSec SA lifetime (seconds)."
+    ::= { mGuardVPNConnectionEntry 32 } 
+
+    mGuardVPNRekeyMargin OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Rekey Margin (seconds)."
+    ::= { mGuardVPNConnectionEntry 33 }
+ 
+    mGuardVPNRekeyFuzz OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Rekey fuzz (in percent)."
+    ::= { mGuardVPNConnectionEntry 34 }
+ 
+    mGuardVPNKeyingTries OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Rekey fuzz (in percent)."
+    ::= { mGuardVPNConnectionEntry 35 }
+
+    mGuardVPNRekey OBJECT-TYPE
+     SYNTAX INTEGER{
+                     yes(1),
+                     no(2)
+                    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Renegotiate connection after the keys have expired? Must be set to
+      'no' on both end to be effective."
+    ::= { mGuardVPNConnectionEntry 36 }
+
+    mGuardVPNDPDAction OBJECT-TYPE
+      SYNTAX INTEGER{
+                      hold(1),
+                      clear(2)
+                    }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "What to do in case DPD found out that the connection is dead:
+        'hold': renegotiate connection.
+        'clear': clear connection and don't renegotiate."
+    ::= { mGuardVPNConnectionEntry 37 }
+    
+    mGuardVPNDPDDelay OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "Interval in seconds to wait before sending DPD requests when 
+        the remote end didn't send data. The default value is 30."
+    ::= { mGuardVPNConnectionEntry 38 }
+
+    mGuardVPNDPDTimeout OBJECT-TYPE
+      SYNTAX INTEGER
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "Interval in seconds before declaring the remote end as dead after
+        sending the first DPD request. The default value is 120."
+    ::= { mGuardVPNConnectionEntry 39 }
+
+    mGuardVPNRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "RowStatus"
+    ::= { mGuardVPNConnectionEntry 40 }
+
+---
+--- IPsec: Incoming Firewall
+---
+
+  mGuardVPNFW OBJECT IDENTIFIER ::= { mGuardVPN 3 }
+
+  mGuardVPNFWINTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardVPNFWINEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION 
+      "Table of firewall rules for incoming packets."
+    ::= { mGuardVPNFW 1 }
+
+    mGuardVPNFWINEntry OBJECT-TYPE
+        SYNTAX MGuardVPNFWINEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "An entry containing data of a single rule."
+        INDEX { mGuardVPNFWINconIndex, mGuardVPNFWINruleIndex }
+    ::= { mGuardVPNFWINTable 1 }
+
+    MGuardVPNFWINEntry ::= SEQUENCE{
+      mGuardVPNFWINconIndex        INTEGER,
+      mGuardVPNFWINruleIndex       INTEGER,
+      mGuardVPNFWINsourceIP        DisplayString,
+      mGuardVPNFWINdestinationIP   DisplayString,
+      mGuardVPNFWINsport           DisplayString,
+      mGuardVPNFWINdport           DisplayString,
+      mGuardVPNFWINtarget          INTEGER,
+      mGuardVPNFWINproto           INTEGER,
+      mGuardVPNFWINlog             INTEGER,
+      mGuardVPNFWINRowStatus       RowStatus
+    }
+
+    mGuardVPNFWINconIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardVPNFWINEntry 1 }
+
+    mGuardVPNFWINruleIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardVPNFWINEntry 2 }
+ 
+    mGuardVPNFWINsourceIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardVPNFWINEntry 3 }
+
+     mGuardVPNFWINdestinationIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardVPNFWINEntry 4 }
+
+     mGuardVPNFWINsport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source port"
+     ::= { mGuardVPNFWINEntry 5 }
+
+      mGuardVPNFWINdport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's destination port"
+     ::= { mGuardVPNFWINEntry 6 }
+
+     mGuardVPNFWINtarget OBJECT-TYPE
+       SYNTAX INTEGER {
+                        accept(1),
+                        reject(2),
+                        drop(3)
+                      }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+          "The rule's target"
+     ::= { mGuardVPNFWINEntry 7 }
+
+
+     mGuardVPNFWINproto OBJECT-TYPE
+      SYNTAX INTEGER {
+                        tcp(1),
+                        udp(2),
+                        icmp(3),
+                        all(4)
+                      }
+      ACCESS read-write
+      STATUS mandatory
+       DESCRIPTION
+        "The rule's transport protocol"
+     ::= { mGuardVPNFWINEntry 8 }
+
+      mGuardVPNFWINlog OBJECT-TYPE
+        SYNTAX INTEGER {
+                         yes(1),
+                         no(2)
+                       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+          "Log packets matching this rule."
+        ::= { mGuardVPNFWINEntry 9 }
+ 
+      mGuardVPNFWINRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "RowStatus"
+      ::= { mGuardVPNFWINEntry 10 }
+
+--
+-- IPsec: Outgoing Firewall
+--
+
+  mGuardVPNFWOUTTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardVPNFWOUTEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table of firewall rules for outgoing packets."
+    ::= { mGuardVPNFW 2 }
+
+    mGuardVPNFWOUTEntry OBJECT-TYPE
+        SYNTAX MGuardVPNFWOUTEntry
+        ACCESS not-accessible
+        STATUS mandatory
+        DESCRIPTION
+            "An entry containing data of a single rule."
+        INDEX { mGuardVPNFWOUTconIndex, mGuardVPNFWOUTruleIndex }
+    ::= { mGuardVPNFWOUTTable 1 }
+
+    MGuardVPNFWOUTEntry ::= SEQUENCE{
+      mGuardVPNFWOUTconIndex        INTEGER,
+      mGuardVPNFWOUTruleIndex       INTEGER,
+      mGuardVPNFWOUTsourceIP        DisplayString,
+      mGuardVPNFWOUTdestinationIP   DisplayString,
+      mGuardVPNFWOUTsport           DisplayString,
+      mGuardVPNFWOUTdport           DisplayString,
+      mGuardVPNFWOUTtarget          INTEGER,
+      mGuardVPNFWOUTproto           INTEGER,
+      mGuardVPNFWOUTlog             INTEGER,
+      mGuardVPNFWOUTRowStatus       RowStatus
+    }
+
+    mGuardVPNFWOUTconIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardVPNFWOUTEntry 1 }
+ 
+    mGuardVPNFWOUTruleIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardVPNFWOUTEntry 2 }
+ 
+    mGuardVPNFWOUTsourceIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardVPNFWOUTEntry 3 }
+
+     mGuardVPNFWOUTdestinationIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardVPNFWOUTEntry 4 }
+
+     mGuardVPNFWOUTsport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source port"
+     ::= { mGuardVPNFWOUTEntry 5 }
+
+      mGuardVPNFWOUTdport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's destination port"
+     ::= { mGuardVPNFWOUTEntry 6 }
+
+     mGuardVPNFWOUTtarget OBJECT-TYPE
+       SYNTAX INTEGER {
+                        accept(1),
+                        reject(2),
+                        drop(3)
+                      }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+          "The rule's target"
+     ::= { mGuardVPNFWOUTEntry 7 }
+
+
+     mGuardVPNFWOUTproto OBJECT-TYPE
+      SYNTAX INTEGER {
+                        tcp(1),
+                        udp(2),
+                        icmp(3),
+                        all(4)
+                      }
+      ACCESS read-write
+      STATUS mandatory
+       DESCRIPTION
+        "The rule's transport protocol"
+     ::= { mGuardVPNFWOUTEntry 8 }
+
+      mGuardVPNFWOUTlog OBJECT-TYPE
+        SYNTAX INTEGER {
+                         yes(1),
+                         no(2)
+                       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+          "Log packets matching this rule."
+        ::= { mGuardVPNFWOUTEntry 9 }
+ 
+      mGuardVPNFWOUTRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "RowStatus"
+      ::= { mGuardVPNFWOUTEntry 10 }
+
+--
+-- DynDNS Register
+--
+
+    mGuardVPNDynDNS OBJECT IDENTIFIER ::= { mGuardVPN 4 }
+     
+    mGuardVPNDynDNSRegister OBJECT IDENTIFIER ::= { mGuardVPNDynDNS 1 }
+    
+    mGuardVPNDynDNSReg OBJECT-TYPE
+     SYNTAX TruthValue
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       " Should the mGuard be registered at a DynDNS service:
+         no, yes" 
+    ::= { mGuardVPNDynDNSRegister 1 }
+ 
+    mGuardVPNDynDNSRegInterval OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       " Refresh interval for registration."
+    ::= { mGuardVPNDynDNSRegister 2 }
+
+    mGuardVPNDynDNSRegServer OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "DynDNS server."
+    ::= { mGuardVPNDynDNSRegister 3 }
+
+    mGuardVPNDynDNSRegLogin OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Login for DynDNS server."
+    ::= { mGuardVPNDynDNSRegister 4 }
+
+    mGuardVPNDynDNSRegPasswd OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Password for DynDNS server."
+    ::= { mGuardVPNDynDNSRegister 5 }
+
+    mGuardVPNDynDNSRegProvider OBJECT-TYPE
+      SYNTAX INTEGER { 
+                       innominate(1),
+		       dyndns(2),
+		       dns4biz(3) 
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "DynDNS provider"
+    ::= { mGuardVPNDynDNSRegister 6 }	
+
+    mGuardVPNDynDNSRegHostname OBJECT-TYPE
+          SYNTAX DisplayString 
+          ACCESS read-write
+          STATUS mandatory
+          DESCRIPTION
+           "Hostname to register"
+    ::= { mGuardVPNDynDNSRegister 7 }
+
+--
+-- DynDNS Watch
+--
+
+    mGuardVPNDynDNSCheck OBJECT IDENTIFIER ::= { mGuardVPNDynDNS 2 }
+ 
+    mGuardVPNDynDNSCheckDo OBJECT-TYPE
+     SYNTAX TruthValue
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Should hostnames of remote vpn gateways be checked after certain
+       time intervals in case they are at a DynDNS provider? : no,yes"
+    ::= {  mGuardVPNDynDNSCheck 1 }
+
+    mGuardVPNDynDNSCheckRefresh OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Refresh interval for checking DNS names of remote VPN peers."
+    ::= {  mGuardVPNDynDNSCheck 2 }
+
+--
+-- IPSec L2TP
+--
+
+    mGuardVPNL2TP  OBJECT IDENTIFIER ::= { mGuardVPN 5 }
+    
+    mGuardVPNL2TPStart OBJECT-TYPE
+     SYNTAX INTEGER {
+			enabled(1),
+			disabled(2)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Start the L2TP Server ? yes,no"
+    ::= { mGuardVPNL2TP 1 }
+
+    mGuardVPNL2TPLocalIP OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Local IP for L2TP connections"
+    ::= { mGuardVPNL2TP 2 }
+
+    mGuardVPNL2TPRemoteIPRangeStart OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Start of range of remote IPs."
+    ::= { mGuardVPNL2TP 3 }
+    
+    mGuardVPNL2TPRemoteIPRangeEnd OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "End of range of remote IPs."
+    ::= { mGuardVPNL2TP 4 }
+
+--
+-- IPsec Options
+--
+
+   mGuardVPNSettings  OBJECT IDENTIFIER ::= { mGuardVPN 6 }
+
+   mGuardVPNRequireUniqueIDs OBJECT-TYPE 
+    SYNTAX INTEGER{
+                    yes(1),
+		    no(2)
+                  }	
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "Allow only one open connection per identity (ie. X.509 certificate)."
+   ::= { mGuardVPNSettings 1 }
+
+   mGuardVPNNatTraversal OBJECT-TYPE                
+    SYNTAX INTEGER{
+                    on(1),
+                    off(2)
+                  }     
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "Encapsulate ESP traffic into IKE (UDP) packets to pass IPsec unaware NAT routers."
+   ::= { mGuardVPNSettings 2 }
+
+   mGuardVPNNatTPortfloating OBJECT-TYPE                
+    SYNTAX INTEGER{
+                    on(1),
+                    off(2)
+                  }     
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "Some NAT routers fail to perform NAT originating low UDP ports. This option moves IKE from UDP 500 to UDP 4500 if possible"
+   ::= { mGuardVPNSettings 3 }
+
+   mGuardVPNNatTKeepAliveInterval OBJECT-TYPE 
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "NAT-T Keepalive Interval (in seconds).
+      Keepalives will tell the NAT router not to close the connection. "  
+   ::= { mGuardVPNSettings 4 }
+
+   mGuardVPNNatTKeepAliveForce OBJECT-TYPE 
+    SYNTAX INTEGER{
+                    yes(1),
+                    no(2)
+                  }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "Force NAT-T Keepalive ?"
+   ::= { mGuardVPNSettings 5 }
+
+   mGuardVPNIkeLog OBJECT-TYPE 
+    SYNTAX INTEGER{
+                    yes(1),
+                    no(2)
+                  }     
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "Log verbose information on IKE ?"
+   ::= { mGuardVPNSettings 6 }
+
+   mGuardVPNHideTos OBJECT-TYPE
+    SYNTAX INTEGER{
+                    yes(1),
+                    no(2)
+                  }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "When set to yes the TOS bit will be cleared on IPsec output. " 
+  ::= { mGuardVPNSettings 7 }
+
+   mGuardVPNmtu OBJECT-TYPE 
+    SYNTAX INTEGER
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "ipsec0 mtu"
+   ::= { mGuardVPNSettings 8 }
+
+   mGuardVPNStrictCRLPolicy OBJECT-TYPE 
+    SYNTAX INTEGER{
+                    yes(1),
+                    no(2)
+                  }     
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+     "Use a strict CRL policy?"
+   ::= { mGuardVPNSettings 9 }
+
+--
+-- Firewall Incoming
+--
+
+   mGuardFirewallIncoming  OBJECT IDENTIFIER ::= { mGuardFirewall 1 }                       
+                         
+   mGuardFirewallIncomingTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardFirewallIncomingEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+        "A table containing firewall rules for incoming  packets."
+   ::= { mGuardFirewallIncoming 1 }
+
+    mGuardFirewallIncomingEntry OBJECT-TYPE
+      SYNTAX MGuardFirewallIncomingEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "An entry containing data of a single rule."
+      INDEX { mGuardFWINruleIndex }
+    ::= { mGuardFirewallIncomingTable 1 }
+
+    MGuardFirewallIncomingEntry ::= SEQUENCE{ 
+      mGuardFWINruleIndex       INTEGER,
+      mGuardFWINsourceIP        DisplayString,
+      mGuardFWINdestinationIP   DisplayString,
+      mGuardFWINsport           DisplayString,
+      mGuardFWINdport           DisplayString,
+      mGuardFWINtarget          INTEGER,
+      mGuardFWINproto           INTEGER,
+      mGuardFWINlog             INTEGER,
+      mGuardFWINRowStatus       RowStatus
+    }
+
+    mGuardFWINruleIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardFirewallIncomingEntry 1 }
+ 
+    mGuardFWINsourceIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardFirewallIncomingEntry 2 }
+
+    mGuardFWINdestinationIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardFirewallIncomingEntry 3 }
+
+     mGuardFWINsport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source port"
+     ::= { mGuardFirewallIncomingEntry 4 }
+
+     mGuardFWINdport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's destination port"
+     ::= { mGuardFirewallIncomingEntry 5 }
+
+     mGuardFWINtarget OBJECT-TYPE
+       SYNTAX INTEGER {
+			accept(1),
+			reject(2),
+			drop(3)
+		      }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+          "The rule's target"
+     ::= { mGuardFirewallIncomingEntry 6 }
+
+     mGuardFWINproto OBJECT-TYPE
+      SYNTAX INTEGER {
+			tcp(1),
+			udp(2),
+			icmp(3),
+			all(4)
+		      }
+      ACCESS read-write
+      STATUS mandatory
+       DESCRIPTION
+        "The rule's transport protocol"
+     ::= { mGuardFirewallIncomingEntry 7 }
+
+      mGuardFWINlog OBJECT-TYPE
+        SYNTAX INTEGER {
+	                 yes(1),
+			 no(2)
+		       }
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+	  " Log packets matching this rule ?"
+       	::= { mGuardFirewallIncomingEntry 8 }  
+     
+      mGuardFWINRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "RowStatus"
+      ::= { mGuardFirewallIncomingEntry 9 }  
+  
+     mGuardFirewallINLogDefault OBJECT-TYPE
+     SYNTAX INTEGER  {
+                       yes(1),
+		       no(2)
+		     }
+     ACCESS read-write 
+     STATUS mandatory
+     DESCRIPTION
+        "Log entries for unknown connection attemps ?"
+   ::= { mGuardFirewallIncoming 2 }
+  
+--
+-- Firewall Outgoing
+--
+   
+   mGuardFirewallOutgoing  OBJECT IDENTIFIER ::= { mGuardFirewall 2 }
+
+   mGuardFirewallOutgoingTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardFirewallOutgoingEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+        "A table containing firewall rules for outgoing  packets."
+   ::= { mGuardFirewallOutgoing 1 }
+
+    mGuardFirewallOutgoingEntry OBJECT-TYPE
+      SYNTAX MGuardFirewallOutgoingEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "An entry containing data of a single rule."
+      INDEX { mGuardFWOUTruleIndex }
+    ::= { mGuardFirewallOutgoingTable 1 }
+
+
+    MGuardFirewallOutgoingEntry ::= SEQUENCE { 
+      mGuardFWOUTruleIndex       INTEGER,
+      mGuardFWOUTsourceIP        DisplayString,
+      mGuardFWOUTdestinationIP   DisplayString,
+      mGuardFWOUTsport           DisplayString,
+      mGuardFWOUTdport           DisplayString,
+      mGuardFWOUTtarget          INTEGER,
+      mGuardFWOUTproto           INTEGER,
+      mGuardFWOUTlog             INTEGER,
+      mGuardFWOUTRowStatus	 RowStatus
+    }
+
+    mGuardFWOUTruleIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardFirewallOutgoingEntry 1 }
+ 
+     mGuardFWOUTsourceIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardFirewallOutgoingEntry 2 }
+
+     mGuardFWOUTdestinationIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardFirewallOutgoingEntry 3 }
+
+     mGuardFWOUTsport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source port"
+     ::= { mGuardFirewallOutgoingEntry 4 }
+
+     mGuardFWOUTdport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's destination port"
+     ::= { mGuardFirewallOutgoingEntry 5 }
+
+     mGuardFWOUTtarget OBJECT-TYPE
+       SYNTAX INTEGER {
+			accept(1),
+			reject(2),
+			drop(3)
+		      }    
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+          "The rule's target"
+     ::= { mGuardFirewallOutgoingEntry 6 }
+
+    mGuardFWOUTproto OBJECT-TYPE
+      SYNTAX INTEGER {
+			tcp(1),
+			udp(2),
+			icmp(3),
+			all(4)
+		      }
+      ACCESS read-write
+      STATUS mandatory
+       DESCRIPTION
+        "The rule's transport protocol"
+     ::= { mGuardFirewallOutgoingEntry 7 }
+
+    mGuardFWOUTlog OBJECT-TYPE
+      SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " Log packets matching this rule ?"
+      ::= { mGuardFirewallOutgoingEntry 8 } 
+
+    mGuardFWOUTRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "RowStatus"
+      ::= { mGuardFirewallOutgoingEntry 9 }  
+
+   mGuardFirewallOUTLogDefault OBJECT-TYPE
+     SYNTAX INTEGER  {
+                       yes(1),
+		       no(2)
+		     }
+     ACCESS read-write 
+     STATUS mandatory
+     DESCRIPTION
+        "Log entries for unknown connection attemps ?"
+   ::= { mGuardFirewallOutgoing 2 }
+
+--
+-- Firwall Portforwarding
+--
+
+  mGuardFirewallPortforwarding OBJECT IDENTIFIER ::= { mGuardFirewall 3 }
+  
+  mGuardFirewallPortforwardTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardFirewallPortforwardEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+        "A table containing firewall rules for portforwarding."
+   ::= { mGuardFirewallPortforwarding 1 }
+
+    mGuardFirewallPortforwardEntry OBJECT-TYPE
+      SYNTAX MGuardFirewallPortforwardEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "An entry containing data of a single rule."
+      INDEX { mGuardFWPORTFORWruleIndex }
+    ::= { mGuardFirewallPortforwardTable 1 }
+
+    MGuardFirewallPortforwardEntry ::= SEQUENCE{ 
+      mGuardFWPORTFORWruleIndex       INTEGER,
+      mGuardFWPORTFORWinIP        DisplayString,
+      mGuardFWPORTFORWoutIP       DisplayString,
+      mGuardFWPORTFORWinport      DisplayString,
+      mGuardFWPORTFORWoutport     DisplayString,
+      mGuardFWPORTFORWproto       INTEGER,
+      mGuardFWPORTFORWlog         INTEGER,
+      mGuardFWPORTFORWRowStatus   RowStatus
+    }
+
+    mGuardFWPORTFORWruleIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardFirewallPortforwardEntry 1 }
+ 
+    mGuardFWPORTFORWinIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's incoming IP address"
+     ::= { mGuardFirewallPortforwardEntry 2 }
+
+    mGuardFWPORTFORWoutIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's redirect IP address"
+     ::= { mGuardFirewallPortforwardEntry 3 }
+
+    mGuardFWPORTFORWinport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source port"
+     ::= { mGuardFirewallPortforwardEntry 4 }
+
+    mGuardFWPORTFORWoutport OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's destination port"
+     ::= { mGuardFirewallPortforwardEntry 5 }
+
+    mGuardFWPORTFORWproto OBJECT-TYPE
+      SYNTAX INTEGER {
+			tcp(1),
+			udp(2)
+		      }
+      ACCESS read-write
+      STATUS mandatory
+       DESCRIPTION
+        "The rule's transport protocol"
+     ::= { mGuardFirewallPortforwardEntry 6 }
+
+    mGuardFWPORTFORWlog OBJECT-TYPE
+      SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " Log packets matching this rule ?"
+      ::= { mGuardFirewallPortforwardEntry 7 }
+
+    mGuardFWPORTFORWRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "RowStatus"
+      ::= { mGuardFirewallPortforwardEntry 8 }  
+
+--
+-- Firewall NAT
+--
+
+   mGuardFirewallNAT OBJECT IDENTIFIER ::= { mGuardFirewall 4}
+                    
+   mGuardFirewallNATRuleTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardFirewallNATRuleEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+        "A table containing firewall rules for network address translation."
+   ::= { mGuardFirewallNAT 1 }
+
+    mGuardFirewallNATRuleEntry OBJECT-TYPE
+      SYNTAX MGuardFirewallNATRuleEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "An entry containing data of a single rule."
+      INDEX { mGuardFWNATruleIndex }
+    ::= { mGuardFirewallNATRuleTable 1 }
+
+
+    MGuardFirewallNATRuleEntry ::= SEQUENCE{ 
+      mGuardFWNATruleIndex       INTEGER,
+      mGuardFWNATIP              DisplayString,
+      mGuardFWNATOutIP           DisplayString,
+      mGuardFWNATRowStatus       RowStatus
+    }
+
+    mGuardFWNATruleIndex OBJECT-TYPE
+      SYNTAX   INTEGER (1..250)
+      ACCESS   not-accessible
+      STATUS   mandatory
+      DESCRIPTION
+        "Index to identify the rule."
+    ::= { mGuardFirewallNATRuleEntry 1 }
+ 
+    mGuardFWNATIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "The rule's source IP address"
+     ::= { mGuardFirewallNATRuleEntry 2 }
+
+    mGuardFWNATOutIP OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Reserved for future use"
+     ::= { mGuardFirewallNATRuleEntry 3 }
+
+    mGuardFWNATRowStatus OBJECT-TYPE
+        SYNTAX RowStatus
+        ACCESS read-write
+        STATUS mandatory
+        DESCRIPTION
+           "RowStatus"
+      ::= { mGuardFirewallNATRuleEntry 4 }  
+
+--
+-- Firewall Extended Settings
+--
+
+    mGuardFirewallExtended  OBJECT IDENTIFIER ::= { mGuardFirewall 5 }
+  
+    mGuardFirewallIPConntrackMax OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum size of connection tracking table"
+    ::= { mGuardFirewallExtended 1 }
+
+    mGuardFirewallIPSynfloodLimitInt OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum number of new outgoing TCP connections (SYN) per second"
+    ::= { mGuardFirewallExtended 2 }
+
+    mGuardFirewallIPSynfloodLimitExt OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum number of new incoming TCP connections (SYN) per second"
+    ::= { mGuardFirewallExtended  3 }
+
+    mGuardFirewallICMPLimitInt OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum number of outgoing ping frames (ICMP Echo Request) per second"
+    ::= { mGuardFirewallExtended  4 }
+
+    mGuardFirewallICMPLimitExt OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum number of incoming ping frames (ICMP Echo Request) per second"
+    ::= { mGuardFirewallExtended  5 }
+
+    mGuardFirewallEnableConntrackFTP OBJECT-TYPE
+     SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Enable active FTP NAT/Connection Tracking support"
+    ::= { mGuardFirewallExtended 6 }
+
+    mGuardFirewallConntrackIRC OBJECT-TYPE
+     SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Enable IRC NAT/Connection Tracking support"
+    ::= { mGuardFirewallExtended 7 }    
+
+    mGuardFirewallConntrackPPTP OBJECT-TYPE
+     SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Enable PPTP NAT/Connection Tracking support"
+    ::= { mGuardFirewallExtended 8 }
+
+   mGuardFirewallARPLimitInt OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum number of outgoing arp request frames per second (stealth mode only)"
+    ::= { mGuardFirewallExtended  9 }
+
+   mGuardFirewallARPLimitExt OBJECT-TYPE
+     SYNTAX INTEGER
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Maximum number of incoming arp request frames per second (stealth mode only)"
+    ::= { mGuardFirewallExtended  10 }
+
+   mGuardFirewallICMPPolicy OBJECT-TYPE
+     SYNTAX INTEGER {
+                       drop(1),
+                       ping(2),
+		       all(3)
+                    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Allow incoming ICMP frames to the mGuard itself (router modes only):
+       drop: default, ping: allow incoming ICMP echo request (required to
+       answer ping), all: allow all incoming ICMP request to reach the TCP
+       stack.
+       Note: ICMP packets related to established connections are handled
+       by the connection tracking. This setting is used for unrelated ICMP
+       traffic."
+    ::= { mGuardFirewallExtended 11 }
+
+--
+-- Network
+--
+
+    mGuardNetworkMode OBJECT-TYPE
+     SYNTAX INTEGER {
+			stealth(1),
+			router(2),
+			pppoe(3),
+			pptp(4)
+		    } 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "The mGuard network mode:
+          router,stealth"
+    ::= { mGuardNetwork 1 }
+
+--
+-- Stealth
+--
+
+    mGuardStealth OBJECT IDENTIFIER ::= { mGuardNetwork 2 }
+
+    mGuardStealthIPConfMode OBJECT-TYPE
+     SYNTAX INTEGER {
+			autoDetect(1),
+			static(2)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "Type of IP Stack configuration of mGuard in stealth mode.
+       autodetect, static, multiple-clients"  
+    ::= { mGuardStealth 1 }
+    
+    mGuardStealthIPConfStatic OBJECT IDENTIFIER ::= { mGuardStealth 2 }
+     
+    mGuardStealthStaticIP OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "IP address of mGuard's client in stealth mode (using static ip
+        configuration)."
+    ::= { mGuardStealthIPConfStatic 1 }
+
+    mGuardStealthStaticNetmask OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Netmask of mGuard in stealth mode (using static ip configuration)."
+    ::= { mGuardStealthIPConfStatic 2 }
+
+    mGuardStealthStaticGateway OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Default gateway of mGuard's client in stealth mode (using static ip
+        configuration)."
+    ::= { mGuardStealthIPConfStatic 3 }
+
+    mGuardStealthStaticMAC OBJECT-TYPE
+     SYNTAX MacAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "MAC address of mGuard's client in stealth mode (using static ip
+        configuration)."
+    ::= { mGuardStealthIPConfStatic 4 }
+
+    mGuardStealthStaticActivate OBJECT-TYPE
+      SYNTAX INTEGER { activate(1) }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Button to activate Stealth Static IP configuration."
+   ::= { mGuardStealthIPConfStatic 5 }
+
+--
+-- Network Internal IP
+--
+
+   mGuardRouter OBJECT IDENTIFIER ::= { mGuardNetwork 3 }
+ 
+   mGuardRouterLocal OBJECT IDENTIFIER ::= { mGuardRouter 1 }
+    
+   mGuardRouterLocalIP OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The internal IP address of the mGuard in router mode. When set,
+	 this value is internally cached inside the agent until it is
+	 explicitly activated by writing the mGuardRouterLocalActivate
+	 object. When read the currently active setting is returned,
+	 not regarding any cached values."
+    ::= { mGuardRouterLocal 1 }
+ 
+   mGuardRouterLocalNetmask OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The internal subnet mask of the mGuard in router mode. When set,
+	 this value is internally cached inside the agent until it is
+	 explicitly activated by writing the mGuardRouterLocalActivate
+	 object. When read the currently active setting is returned,
+	 not regarding any cached values."
+    ::= { mGuardRouterLocal 2 }
+ 
+  mGuardRouterLocalActivate OBJECT-TYPE
+    SYNTAX INTEGER {
+			activate(1),
+			valuescached(2)
+		   }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Button to activate the router local IP configuration. When
+	  activate(1) is written, any cached values for the mGuardRouterLocalIP,
+	  mGuardRouterLocalNetmask, and mGuardRouterExternStaticGateway
+	  objects are activated. When read and one or more of the above
+	  mentioned objects have been cached, valuescached(2) is returned,
+	  not regarding whether the cached valued and the current value
+	  are different."
+   ::= { mGuardRouterLocal 3 }  
+
+--
+-- Network Internal Aliases
+--
+   
+   mGuardRouterLocalAliasesTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardRouterLocalAliasesEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+     "A table containing aliases for the local interface."
+   ::= { mGuardRouterLocal 4 } 
+    
+   mGuardRouterLocalAliasesEntry OBJECT-TYPE
+    SYNTAX MGuardRouterLocalAliasesEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+     "An entry  containing a single alias for the local interface."
+    INDEX { mGuardLocalAliasIndex }
+   ::= { mGuardRouterLocalAliasesTable 1 }
+
+   MGuardRouterLocalAliasesEntry ::= SEQUENCE {
+     mGuardLocalAliasIndex      INTEGER,
+     mGuardLocalAliasIpAddress  IpAddress,
+     mGuardLocalAliasNetmask    IpAddress,
+     mGuardLocalAliasRowStatus  RowStatus
+   } 
+   
+   mGuardLocalAliasIndex OBJECT-TYPE
+     SYNTAX INTEGER(1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Identifier."    
+     ::= { mGuardRouterLocalAliasesEntry 1 }
+   
+   mGuardLocalAliasIpAddress OBJECT-TYPE
+     SYNTAX IpAddress 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "IP address."       
+     ::= { mGuardRouterLocalAliasesEntry 2 }
+ 
+   mGuardLocalAliasNetmask OBJECT-TYPE
+    SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Netmask."
+     ::= { mGuardRouterLocalAliasesEntry 3 }
+  
+    mGuardLocalAliasRowStatus OBJECT-TYPE
+     SYNTAX RowStatus
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "RowStatus"
+    ::= { mGuardRouterLocalAliasesEntry 4 }
+
+--
+-- Network Internal Routes
+--
+    
+    mGuardLocalRoutesTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardLocalRoutesEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+      "A table containing additional internal routes."
+    ::= { mGuardRouterLocal 5 } 
+    
+    mGuardLocalRoutesEntry OBJECT-TYPE
+     SYNTAX MGuardLocalRoutesEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+      "An entry  containing a single internal route."
+     INDEX { mGuardLocalRouteIndex }
+    ::= { mGuardLocalRoutesTable 1 }
+
+    MGuardLocalRoutesEntry ::= SEQUENCE {
+      mGuardLocalRouteIndex      INTEGER,
+      mGuardLocalRouteNetwork    DisplayString,
+      mGuardLocalRouteGateway    IpAddress,
+      mGuardLocalRouteRowStatus  RowStatus
+   } 
+   
+   mGuardLocalRouteIndex OBJECT-TYPE
+     SYNTAX INTEGER(1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Identifier."    
+     ::= { mGuardLocalRoutesEntry 1 }
+   
+   mGuardLocalRouteNetwork OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Routed network."       
+     ::= { mGuardLocalRoutesEntry 2 }
+ 
+    mGuardLocalRouteGateway OBJECT-TYPE
+     SYNTAX IpAddress 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Routing gateway."
+     ::= { mGuardLocalRoutesEntry 3 }
+  
+     mGuardLocalRouteRowStatus OBJECT-TYPE
+     SYNTAX RowStatus
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "RowStatus"
+     ::= { mGuardLocalRoutesEntry 4 }
+
+--
+-- Network External IP
+--
+
+    mGuardRouterExtern OBJECT IDENTIFIER ::= { mGuardRouter 2 }
+
+    mGuardRouterExternDHCP OBJECT-TYPE
+     SYNTAX INTEGER {
+			enabled(1),
+			disabled(2)
+		    } 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "When enabled, retrieve the external IP via DHCP, otherwise use
+        the value stored in mGuardRouterExternStaticIP."
+    ::= { mGuardRouterExtern 1 }
+
+    mGuardRouterExternStatic  OBJECT IDENTIFIER ::= { mGuardRouterExtern 2 }
+ 
+    mGuardRouterExternStaticIP OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The external IP address of the mGuard in router mode
+	 (when statically configured). When set, this value is internally
+	 cached inside the agent until it is explicitly activated by writing
+	 the mGuardRouterExternStaticActivate object. When read the currently
+	 active setting is returned, not regarding any cached values."
+    ::= { mGuardRouterExternStatic 1 }
+
+    mGuardRouterExternStaticNetmask OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The external netmask of the mGuard in router mode (when
+	 statically configured). When set, this value is internally cached
+	 inside the agent until it is explicitly activated by writing the
+	 mGuardRouterExternStaticActivate object. When read the currently
+	 active setting is returned, not regarding any cached values."
+    ::= { mGuardRouterExternStatic 2 }
+
+    mGuardRouterExternStaticGateway OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "The (extern) default gateway of the mGuard in router mode (when
+	 statically configured). When set, this value is internally cached
+	 inside the agent until it is explicitly activated by writing the
+	 mGuardRouterExternStaticActivate  or mGuardRouterLocalActivate object.
+	 When read the currently active setting is returned, not regarding
+	 any cached values."
+    ::= { mGuardRouterExternStatic 3 }
+
+   mGuardRouterExternActivate OBJECT-TYPE
+    SYNTAX INTEGER {
+			activate(1),
+			valuescached(2)
+		   }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "Button to activate the router extern IP configuration. When
+	  activate(1) is written, any cached values for the
+	  mGuardRouterExternStaticIP, mGuardRouterExternStaticNetmask, and
+	  mGuardRouterExternStaticGateway objects are activated. When read
+	  and one or more of the above mentioned objects have been cached,
+	  valuescached(2) is returned, not regarding whether the cached valued
+	  and the current value are different."
+   ::= { mGuardRouterExternStatic 4 }
+
+--
+-- Network External Aliases
+--
+
+  mGuardRouterExternAliasesTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardRouterExternAliasesEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+     "A table containing aliases for the external interface."
+   ::= { mGuardRouterExternStatic 5 } 
+    
+   mGuardRouterExternAliasesEntry OBJECT-TYPE
+    SYNTAX MGuardRouterExternAliasesEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+     "An entry  containing a single alias for the extern interface."
+    INDEX { mGuardExternAliasIndex }
+   ::= { mGuardRouterExternAliasesTable 1 }
+
+   MGuardRouterExternAliasesEntry ::= SEQUENCE {
+     mGuardExternAliasIndex      INTEGER,
+     mGuardExternAliasIpAddress  IpAddress,
+     mGuardExternAliasNetmask    IpAddress,
+     mGuardExternAliasRowStatus  RowStatus
+   } 
+   
+   mGuardExternAliasIndex OBJECT-TYPE
+     SYNTAX INTEGER(1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Identifier."    
+     ::= { mGuardRouterExternAliasesEntry 1 }
+   
+   mGuardExternAliasIpAddress OBJECT-TYPE
+     SYNTAX IpAddress 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "IP address."       
+     ::= { mGuardRouterExternAliasesEntry 2 }
+ 
+   mGuardExternAliasNetmask OBJECT-TYPE
+    SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Netmask."
+     ::= { mGuardRouterExternAliasesEntry 3 }
+  
+    mGuardExternAliasRowStatus OBJECT-TYPE
+     SYNTAX RowStatus
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "RowStatus"
+    ::= { mGuardRouterExternAliasesEntry 4 }
+
+--
+-- Network External Routes
+--
+
+    mGuardExternRoutesTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardExternRoutesEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+      "A table containing additional external routes."
+    ::= { mGuardRouterExternStatic 6 } 
+    
+    mGuardExternRoutesEntry OBJECT-TYPE
+     SYNTAX MGuardExternRoutesEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+      "An entry  containing a single external route."
+     INDEX { mGuardExternRouteIndex }
+    ::= { mGuardExternRoutesTable 1 }
+
+    MGuardExternRoutesEntry ::= SEQUENCE {
+      mGuardExternRouteIndex      INTEGER,
+      mGuardExternRouteNetwork    DisplayString,
+      mGuardExternRouteGateway    IpAddress,
+      mGuardExternRouteRowStatus  RowStatus
+   } 
+   
+   mGuardExternRouteIndex OBJECT-TYPE
+     SYNTAX INTEGER(1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Identifier."    
+     ::= { mGuardExternRoutesEntry 1 }
+   
+   mGuardExternRouteNetwork OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Routed network."       
+     ::= { mGuardExternRoutesEntry 2 }
+ 
+    mGuardExternRouteGateway OBJECT-TYPE
+     SYNTAX IpAddress 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Routing gateway."
+     ::= { mGuardExternRoutesEntry 3 }
+  
+     mGuardExternRouteRowStatus OBJECT-TYPE
+     SYNTAX RowStatus
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "RowStatus"
+     ::= { mGuardExternRoutesEntry 4 }
+
+--
+-- Network PPPoE
+--
+
+   mGuardPPPOE OBJECT IDENTIFIER ::= { mGuardNetwork 4 }
+
+   mGuardPPPOELogin OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "The mGuard's PPPoE login."
+   ::= { mGuardPPPOE 1 }
+
+   mGuardPPPOEPasswd OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "The mGuard's PPPoE password."
+   ::={ mGuardPPPOE 2 }
+
+   mGuardPPPOEMSS OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "The maximum segment size used for PPPoE"
+   ::={ mGuardPPPOE 3 }
+
+   mGuardPPPOEServiceName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "The service name used for PPPoE, normally not used!"
+   ::={ mGuardPPPOE 4 }
+
+   mGuardPPPOEAccessConcentName OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "The access concentrator name used for PPPoE, normally not used!"
+   ::={ mGuardPPPOE 5 }
+
+   mGuardPPPOEHostUnique OBJECT-TYPE
+    SYNTAX INTEGER {
+			enabled(1),
+			disabled(2)
+		   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Set 'Host-Unique' tag for discovery, required for operation with
+       several daemons"
+   ::={ mGuardPPPOE 6 }
+
+  mGuardPPPOEpppdOptionsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardPPPOEpppdOptionsEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of options set for the pppd process implementing PPPOE."
+   ::= { mGuardPPPOE 7 }
+ 
+  mGuardPPPOEpppdOptionsEntry OBJECT-TYPE
+      SYNTAX MGuardPPPOEpppdOptionsEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single option set for pppd. "
+      INDEX { mGuardPPPOEpppdOptionsIndex }
+  ::= { mGuardPPPOEpppdOptionsTable 1}
+
+  MGuardPPPOEpppdOptionsEntry  ::= SEQUENCE {
+     mGuardPPPOEpppdOptionsIndex     INTEGER,
+     mGuardPPPOEpppdOptionsValue     DisplayString,
+     mGuardPPPOEpppdOptionsRowStatus RowStatus
+  }
+
+  mGuardPPPOEpppdOptionsIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..100)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardPPPOEpppdOptionsEntry 1 }
+
+   mGuardPPPOEpppdOptionsValue OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "The pppd option."
+   ::= { mGuardPPPOEpppdOptionsEntry 2 }
+
+   mGuardPPPOEpppdOptionsRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardPPPOEpppdOptionsEntry 3 }
+
+--
+-- DHCP Server
+--
+
+   mGuardDHCP OBJECT IDENTIFIER ::= { mGuardNetwork 5 }
+
+   mGuardDHCPStart OBJECT-TYPE
+    SYNTAX INTEGER {
+			enabled(1),
+			disabled(2)
+		   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Enable the internal DHCP Server ?"
+   ::={ mGuardDHCP 1 }
+
+   mGuardDHCPRangeStart OBJECT-TYPE
+    SYNTAX IpAddress
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Start of ip range provided by mGuard's internal DHCP Server."
+   ::={ mGuardDHCP 2 }
+
+   mGuardDHCPRangeEnd OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "End of ip range provided by mGuard's internal DHCP Server."
+   ::={ mGuardDHCP 3 }
+
+   mGuardDHCPNetmask OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Netmask provided by the mGuard's internal DHCP Server."
+    ::={ mGuardDHCP 4 }
+
+   mGuardDHCPGateway OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Default gateway provided by the mGuard's internal DHCP Server."
+    ::={ mGuardDHCP 5 }
+
+   mGuardDHCPDnsServer OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "DNS Server provided by the mGuard's internal DHCP server."
+    ::={ mGuardDHCP 6 }
+
+   mGuardDHCPPoolEnable OBJECT-TYPE
+    SYNTAX INTEGER {
+			enabled(1),
+			disabled(2)
+		   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Enable the dynamic DHCP Pool ?"
+   ::={ mGuardDHCP 7 }
+
+   mGuardDHCPStaticTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardDHCPStaticEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table containing static MAC-IP address allocations."
+   ::= { mGuardDHCP 8 }
+
+   mGuardDHCPStaticEntry OBJECT-TYPE
+     SYNTAX MGuardDHCPStaticEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+     "An entry containing a single MAC-IP address allocation."
+     INDEX { mGuardDHCPStaticIndex }
+    ::= { mGuardDHCPStaticTable 1 } 
+ 
+    MGuardDHCPStaticEntry ::= SEQUENCE {
+         mGuardDHCPStaticIndex INTEGER,
+         mGuardDHCPStaticMAC   MacAddress,
+         mGuardDHCPStaticIP    IpAddress,
+         mGuardDHCPStaticRowStatus   RowStatus
+    }
+
+    mGuardDHCPStaticIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Index to identify allocation entry."
+    ::= { mGuardDHCPStaticEntry 1 }
+
+    mGuardDHCPStaticMAC OBJECT-TYPE
+     SYNTAX MacAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The client's MAC address"
+    ::= { mGuardDHCPStaticEntry 2 }
+
+    mGuardDHCPStaticIP OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The allocated IP address"
+    ::= { mGuardDHCPStaticEntry 3 }
+
+    mGuardDHCPStaticRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        "RowStatus"
+    ::= { mGuardDHCPStaticEntry 4 }
+
+--
+-- Network DNS
+--
+
+    mGuardDNS OBJECT IDENTIFIER ::= { mGuardNetwork 6 }
+    
+    mGuardDNSSearchPath OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Domain search path."
+    ::= { mGuardDNS 1 }
+
+    mGuardDNSServerType OBJECT-TYPE
+     SYNTAX INTEGER {
+			root(1),
+			provider(2),
+			user(3)
+		    } 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Type of DNS Servers to query:
+         root: DNS root servers
+         provider: Provider defined DNS Servers (via DHCP,PPPOE)
+         user: User defined DNS Servers"
+    ::={ mGuardDNS 2 }
+
+    mGuardDNSUserDefinedServerTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardDNSUserDefinedServerEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       " A table containing user defined DNS Servers"
+    ::={ mGuardDNS 3 }
+    
+    mGuardDNSUserDefinedServerEntry OBJECT-TYPE
+     SYNTAX MGuardDNSUserDefinedServerEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "A mGuardDNSServer entry."
+     INDEX { mGuarddnsServerIndex }
+    ::={ mGuardDNSUserDefinedServerTable 1 }
+
+    MGuardDNSUserDefinedServerEntry ::= SEQUENCE {
+      mGuarddnsServerIndex INTEGER,
+      mGuarddnsServerIP    IpAddress,
+      mGuarddnsServerRowStatus RowStatus
+    }
+
+    mGuarddnsServerIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Index to identify DNS Server entry."
+    ::= { mGuardDNSUserDefinedServerEntry 1 }
+
+    mGuarddnsServerIP OBJECT-TYPE
+     SYNTAX IpAddress
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "DNS Server IP address."
+    ::= { mGuardDNSUserDefinedServerEntry 2 }
+
+    mGuarddnsServerRowStatus OBJECT-TYPE
+      SYNTAX RowStatus
+      ACCESS read-write 
+      STATUS mandatory
+      DESCRIPTION
+       "RowStatus"
+    ::= { mGuardDNSUserDefinedServerEntry 3 }
+
+    mGuardDNSCacheEnabled OBJECT-TYPE
+     SYNTAX INTEGER {
+			enabled(1),
+			disabled(2)
+		    } 
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+        "Enable or disable built-in DNS cache feature"
+    ::= { mGuardDNS 4 }
+
+--
+-- NetworkStatus
+--
+
+   mGuardNetworkStatus OBJECT IDENTIFIER::= { mGuardNetwork 7 }
+
+   mGuardNetworkStatMode OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Current network mode of the mGuard."
+    ::= { mGuardNetworkStatus 1 }
+
+    mGuardNetworkStatExtIP OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "external IP address of the mGuard."
+    ::= { mGuardNetworkStatus 2 }
+
+   mGuardNetworkStatGateway OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Default gateway via the mGuard's external IP address."
+    ::= { mGuardNetworkStatus 3 }
+
+   mGuardNetworkStatVPN OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Statistics about the VPN connections of the mGuard (total/used/up)."
+    ::= { mGuardNetworkStatus 4 }
+
+   mGuardNetworkStatDynIPReg OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Statistics about VPN DynIP registration."
+    ::= { mGuardNetworkStatus 5 }
+
+   mGuardNetworkStatHTTPSRemAccess OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Status of HTTPS remote access (yes/no)."
+    ::= { mGuardNetworkStatus 6 }
+
+   mGuardNetworkStatSSHRemoteAccess OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Status of SSH remote access (yes/no)."
+    ::= { mGuardNetworkStatus 7 }
+
+   mGuardNetworkSoftwareVersion OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Current software version of the mGuard."
+    ::= { mGuardNetworkStatus 8 }
+
+   mGuardNetworkStatUptime OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "Uptime of the mGuard."
+    ::= { mGuardNetworkStatus 9 }
+
+   mGuardNetworkStatLanguage OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+      "GAI Language ."
+    ::= { mGuardNetworkStatus 10 }
+
+--
+-- Network Hostname
+--
+
+   mGuardHostname OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "The hostname of the mGuard"
+   ::= { mGuardNetwork 8 }
+
+ 
+   mGuardHostnameMode OBJECT-TYPE
+    SYNTAX INTEGER {
+                       userDefined(1),
+                       providerDefined(2)
+                   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Hostname mode: 
+                      1: defined by mGuardHostname,
+                      2: provider defined (e.g. DHCP)
+       "
+   ::= { mGuardNetwork 9 }
+    
+--
+-- Network PPTP
+--
+
+  mGuardPPTP OBJECT IDENTIFIER ::= { mGuardNetwork 10 }
+
+  mGuardPPTPLogin OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "PPTP login"
+  ::= { mGuardPPTP 1 }
+
+  mGuardPPTPassword OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "PPTP password"
+  ::= { mGuardPPTP 2 } 
+
+  mGuardPPTPLocalIPMode OBJECT-TYPE
+   SYNTAX INTEGER {
+                     static(1),
+		     dhcp(2)
+                  }
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+     "When set to static will use the value from mGuardPPTPLocalIP on it
+     external interface connecting to the PPTP server/modem. Otherwise it
+     it use DHCP."
+  ::= { mGuardPPTP 3 }
+
+  mGuardPPTPLocalIP OBJECT-TYPE
+   SYNTAX IpAddress
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The external IP of the mGuard when connecting to the PPTP server/modem
+      when mGuardPPTPLocalIPMode is set to static."
+  ::= { mGuardPPTP 4 }
+
+  mGuardPPTPModemIP OBJECT-TYPE
+   SYNTAX IpAddress
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+      "The IP of the PPTP server/modem."
+  ::= { mGuardPPTP 5 }
+
+  mGuardPPTPpppdOptionsTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardPPTPpppdOptionsEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of options set for the pppd process implementing PPTP."
+   ::= { mGuardPPTP 6 }
+ 
+  mGuardPPTPpppdOptionsEntry OBJECT-TYPE
+      SYNTAX MGuardPPTPpppdOptionsEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single option set for pppd. "
+      INDEX { mGuardPPTPpppdOptionsIndex }
+  ::= { mGuardPPTPpppdOptionsTable 1}
+
+  MGuardPPTPpppdOptionsEntry  ::= SEQUENCE {
+     mGuardPPTPpppdOptionsIndex     INTEGER,
+     mGuardPPTPpppdOptionsValue     DisplayString,
+     mGuardPPTPpppdOptionsRowStatus RowStatus
+  }
+
+  mGuardPPTPpppdOptionsIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..100)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardPPTPpppdOptionsEntry 1 }
+
+   mGuardPPTPpppdOptionsValue OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "The pppd option."
+   ::= { mGuardPPTPpppdOptionsEntry 2 }
+
+   mGuardPPTPpppdOptionsRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardPPTPpppdOptionsEntry 3 }
+
+--
+-- Passwords
+--
+
+    mGuardPasswords OBJECT IDENTIFIER ::= { mGuardSystem 1 }
+        
+    
+    mGuardRootPassword OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Object to change the mGuard's root password.
+       Change by setting:  <old root password> <new root password>"
+    ::= { mGuardPasswords 1 }
+        
+    mGuardAdminPassword OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Object to change the mGuard's admin password."
+    ::= { mGuardPasswords 2 }
+
+    mGuardUserPassword OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Object to change the mGuard's user password."
+    ::= { mGuardPasswords 3 }
+
+    mGuardUserPwdEnable OBJECT-TYPE
+     SYNTAX TruthValue
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Enable user password ? 
+           yes,no"
+    ::= { mGuardPasswords 4 }
+
+--
+-- HTTPS Remote Access
+--
+
+    mGuardHTTPSRemoteAccess OBJECT IDENTIFIER ::= { mGuardSystem 2 }
+      
+    mGuardHTTPSRemoteEnable OBJECT-TYPE
+     SYNTAX TruthValue
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       " Value to control HTTPS remote access:
+            yes: enabled
+            no: disabled"
+    ::= { mGuardHTTPSRemoteAccess 1 }
+
+    mGuardHTTPSRemotePort OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Port for HTTPS remote Access (regularly 443), service names allowed."
+    ::= { mGuardHTTPSRemoteAccess 2}
+
+    mGuardHTTPSRemoteFWRuleTable OBJECT-TYPE
+     SYNTAX SEQUENCE OF MGuardHTTPSRemoteFWRuleEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+        "A table containing firewall rules to allow HTTPS remote access."
+     ::= { mGuardHTTPSRemoteAccess 3 }
+
+    mGuardHTTPSRemoteFWRuleEntry OBJECT-TYPE
+     SYNTAX MGuardHTTPSRemoteFWRuleEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+     "An entry containing a single firewall rule to allow HTTPS remote access."
+      INDEX { mGuardHTTPSFWruleIndex }
+      ::= { mGuardHTTPSRemoteFWRuleTable 1 }
+
+    MGuardHTTPSRemoteFWRuleEntry ::= SEQUENCE {
+         mGuardHTTPSFWruleIndex INTEGER,
+         mGuardHTTPSFWsourceIP  DisplayString,
+         mGuardHTTPSFWinterface INTEGER,
+         mGuardHTTPSFWtarget    INTEGER,
+         mGuardHTTPSFWlog       INTEGER,
+         mGuardHTTPSFWRowStatus  RowStatus     
+    }
+      
+    mGuardHTTPSFWruleIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Index to identify rule."
+    ::= { mGuardHTTPSRemoteFWRuleEntry 1 }
+
+    mGuardHTTPSFWsourceIP OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write    
+     STATUS mandatory
+     DESCRIPTION
+       "The rule's source IP address  "
+    ::= { mGuardHTTPSRemoteFWRuleEntry 2 }
+
+    mGuardHTTPSFWinterface OBJECT-TYPE
+     SYNTAX INTEGER {
+			extern(1)
+		    }
+     ACCESS read-write    
+     STATUS mandatory
+     DESCRIPTION
+       "The network interface the rule belongs to (extern/intern)."
+    ::= { mGuardHTTPSRemoteFWRuleEntry 3}
+
+    mGuardHTTPSFWtarget OBJECT-TYPE
+     SYNTAX INTEGER {
+			accept(1),
+			reject(2),
+			drop(3)
+		    }
+     ACCESS read-write    
+     STATUS mandatory
+     DESCRIPTION
+       "The target of the rule (accept,reject,drop)."
+    ::= { mGuardHTTPSRemoteFWRuleEntry 4}
+
+    mGuardHTTPSFWlog OBJECT-TYPE
+     SYNTAX INTEGER {
+                      yes(1),
+                      no(2)
+                    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       " Log packets matching this rule ?"
+     ::= { mGuardHTTPSRemoteFWRuleEntry 5 }
+
+  
+    mGuardHTTPSFWRowStatus OBJECT-TYPE
+     SYNTAX RowStatus 
+     ACCESS read-write    
+     STATUS mandatory
+     DESCRIPTION 
+      "RowStatus"
+    ::= { mGuardHTTPSRemoteFWRuleEntry 6}
+
+--
+-- SSH Remote Access
+--
+ 
+    mGuardSSHRemoteAccess OBJECT IDENTIFIER ::= { mGuardSystem 3 }
+    
+    mGuardSSHRemoteEnable OBJECT-TYPE
+     SYNTAX TruthValue
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       " Value to control SSH remote access:
+            yes: enabled
+            no: disabled"
+    ::= { mGuardSSHRemoteAccess 1 }
+
+
+    mGuardSSHRemotePort OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "Port for SSH remote Access (regularly 22), service names allowed."
+    ::= { mGuardSSHRemoteAccess 2}
+
+
+     mGuardSSHRemoteFWRuleTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF MGuardSSHRemoteFWRuleEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+        "A table containing firewall rules to allow SSH remote access."
+     ::= { mGuardSSHRemoteAccess 3 }
+
+     mGuardSSHRemoteFWRuleEntry OBJECT-TYPE
+      SYNTAX MGuardSSHRemoteFWRuleEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+      "An entry containing a single firewall rule to allow SSH remote access."
+      INDEX { mGuardSSHFWruleIndex }
+     ::= { mGuardSSHRemoteFWRuleTable 1 } 
+ 
+    MGuardSSHRemoteFWRuleEntry ::= SEQUENCE {
+         mGuardSSHFWruleIndex INTEGER,
+         mGuardSSHFWsourceIP  DisplayString,
+         mGuardSSHFWinterface INTEGER,
+         mGuardSSHFWtarget    INTEGER,
+         mGuardSSHFWlog       INTEGER,
+         mGuardSSHFWRowStatus RowStatus
+    }
+
+    mGuardSSHFWruleIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Index to identify rule."
+    ::= { mGuardSSHRemoteFWRuleEntry 1 }
+
+    mGuardSSHFWsourceIP OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The rule's source IP address  "
+    ::= { mGuardSSHRemoteFWRuleEntry 2 }
+
+    mGuardSSHFWinterface OBJECT-TYPE
+     SYNTAX INTEGER {
+			extern(1)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The network interface the rule belongs to (extern/intern)."
+    ::= { mGuardSSHRemoteFWRuleEntry 3}
+
+    mGuardSSHFWtarget OBJECT-TYPE
+     SYNTAX INTEGER {
+			accept(1),
+			reject(2),
+			drop(3)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The target of the rule (accept/reject/drop)."
+    ::= { mGuardSSHRemoteFWRuleEntry 4}
+
+
+     mGuardSSHFWlog OBJECT-TYPE
+      SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                    }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " Log packets matching this rule ?"
+      ::= { mGuardSSHRemoteFWRuleEntry 5 }
+
+
+    mGuardSSHFWRowStatus OBJECT-TYPE
+     SYNTAX RowStatus
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "RowStatus"
+    ::= { mGuardSSHRemoteFWRuleEntry 6}
+
+--
+-- Language
+--
+
+    mGuardLanguage OBJECT-TYPE
+     SYNTAX INTEGER {
+			automatic(1),
+			englisch(2),
+			german(3)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "The language for communication with the user via HTTP."
+    ::= { mGuardSystem 4}
+
+--
+-- Hardware Information
+--
+
+    mGuardHardwareInformation OBJECT IDENTIFIER ::= { mGuardSystem 5 }
+
+    mGuardHardware OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The hardware of the mGuard."
+    ::= { mGuardHardwareInformation 1 }
+    
+       
+    mGuardCPU OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The CPU of the mGuard."
+    ::= { mGuardHardwareInformation 2 }
+
+
+    mGuardCPUFamily OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The CPU family of the mGuard."
+    ::= { mGuardHardwareInformation 3 }
+
+    mGuardCPUStepping OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The CPU stepping of the mGuard."
+    ::= { mGuardHardwareInformation 4 }
+
+   mGuardCPUSpeed OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The CPU speed in MHz ."
+    ::= { mGuardHardwareInformation 5 }
+
+   mGuardSystemTemperature OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The current system temperature."
+    ::= { mGuardHardwareInformation 6 }
+
+    mGuardUptime OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The system uptime ."
+    ::= { mGuardHardwareInformation 7 }
+  
+    mGuardUSMem OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The userspace memory."
+    ::= { mGuardHardwareInformation 8 }
+
+    mGuardMAC1 OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The MAC address of the first network interface."
+    ::= { mGuardHardwareInformation 9 }
+
+    mGuardMAC2 OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The MAC address of the first network interface."
+    ::= { mGuardHardwareInformation 10 }
+
+    mGuardProductName OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The product name."
+    ::= { mGuardHardwareInformation 11 }
+
+    mGuardOEMName OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The name of the OEM."
+    ::= { mGuardHardwareInformation 12 }
+
+    mGuardOEMSerial OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The mGuard's OEM serial number ."
+    ::= { mGuardHardwareInformation 13 }
+
+    mGuardManufacturer OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The mGuard's manufacturer."
+    ::= { mGuardHardwareInformation 14 }
+
+    mGuardManuDate OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "Date of manufacturing."
+    ::= { mGuardHardwareInformation 15 }
+
+    mGuardSerial OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The mGuard's serial number ."
+    ::= { mGuardHardwareInformation 16 }
+
+    mGuardBootLoader OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The bootloader used at production ."
+    ::= { mGuardHardwareInformation 17 }
+
+    mGuardHardwareVersion OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The mGuard's hardware version."
+    ::= { mGuardHardwareInformation 18 }
+
+   mGuardRescueSystem OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The rescue system used at production ."
+    ::= { mGuardHardwareInformation 19 }
+
+   mGuardProdSoft OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The software used at production ."
+    ::= { mGuardHardwareInformation 20 }
+
+   mGuardVerParSet OBJECT-TYPE
+     SYNTAX DisplayString 
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The parameterset version."
+    ::= { mGuardHardwareInformation 21 }
+
+--
+-- Package Information
+--
+
+    mGuardVersions OBJECT IDENTIFIER ::= { mGuardSystem 7}
+
+    mGuardVersion OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The current version of the mGuard."
+    ::= { mGuardVersions 1 }
+    
+    mGuardBaseVersion OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "The base version of the mGuard."
+    ::=  { mGuardVersions 2 }
+    
+    mGuardUpdates OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "Performed updates."
+     ::= { mGuardVersions 3 }
+             
+    
+    mGuardPackageVersionTable OBJECT-TYPE
+      SYNTAX SEQUENCE OF MGuardPackageVersionEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "Package descriptions."
+    ::= { mGuardVersions 4 }
+    
+     mGuardPackageVersionEntry OBJECT-TYPE
+      SYNTAX MGuardPackageVersionEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "Description of a single package."
+      INDEX { mGuardPkgIndex } 
+    ::= { mGuardPackageVersionTable 1 }
+                                   
+    MGuardPackageVersionEntry ::= SEQUENCE
+    {
+      mGuardPkgIndex  INTEGER,
+      mGuardPkgName   DisplayString,
+      mGuardPkgVerNum DisplayString,
+      mGuardPkgVerVersion DisplayString,
+      mGuardPkgVerFlavour DisplayString
+    }                         
+       
+    mGuardPkgIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..250)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Index to identify package."
+    ::= {mGuardPackageVersionEntry 1 } 
+    
+    mGuardPkgName OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "Package name."
+    ::= {mGuardPackageVersionEntry 2 }   
+    
+    mGuardPkgVerNum OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "Package version number."
+    ::= {mGuardPackageVersionEntry 3 } 
+    
+    mGuardPkgVerVersion OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "Package version."
+    ::= {mGuardPackageVersionEntry 4 } 
+    
+    mGuardPkgVerFlavour OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+       "Package flavour."
+    ::= {mGuardPackageVersionEntry 5 } 
+
+--
+-- Reboot
+--
+
+    mGuardAction OBJECT-TYPE
+     SYNTAX INTEGER {
+			reboot(1)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "If set to 1, the mGuard reboots."
+    ::= { mGuardSystem 8 }   
+
+--
+-- SNMP Remote Access
+--
+
+   mGuardSNMPenableV3 OBJECT-TYPE
+    SYNTAX INTEGER {
+                      yes(1),
+		      no(2)
+		   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Should SNMPv3 be enabled ?"
+   ::= { mGuardSNMP 1 }
+
+    mGuardSNMPenableV1 OBJECT-TYPE
+    SYNTAX INTEGER {
+                      yes(1),
+		      no(2)
+		   }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Should SNMPv1 be enabled ?"
+   ::= { mGuardSNMP 2 }
+
+   mGuardSNMPport OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "The port the snmp agent listens to."
+    ::= { mGuardSNMP 3}  
+
+   mGuardSNMPv1ROCommunity OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Read-only community string for SNMPv1."
+   ::= { mGuardSNMP 4 }
+
+   mGuardSNMPv1RWCommunity OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Read-write community string for SNMPv1."
+   ::= { mGuardSNMP 5 }
+
+
+   mGuardSNMPFWRuleTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardSNMPFWRuleEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table containing firewall rules to allow SNMP access."
+   ::= { mGuardSNMP 6 }
+
+   mGuardSNMPFWRuleEntry OBJECT-TYPE
+     SYNTAX MGuardSNMPFWRuleEntry
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+     "An entry containing a single firewall rule to allow SNMP access."
+     INDEX { mGuardSNMPFWruleIndex }
+    ::= { mGuardSNMPFWRuleTable 1 } 
+ 
+    MGuardSNMPFWRuleEntry ::= SEQUENCE {
+         mGuardSNMPFWruleIndex INTEGER,
+         mGuardSNMPFWsourceIP  DisplayString,
+         mGuardSNMPFWinterface INTEGER,
+         mGuardSNMPFWtarget    INTEGER,
+         mGuardSNMPFWlog       INTEGER,
+         mGuardSNMPFWRowStatus RowStatus
+    }
+
+    mGuardSNMPFWruleIndex OBJECT-TYPE
+     SYNTAX INTEGER (1..100)
+     ACCESS not-accessible
+     STATUS mandatory
+     DESCRIPTION
+       "Index to identify rule."
+    ::= { mGuardSNMPFWRuleEntry 1 }
+
+    mGuardSNMPFWsourceIP OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The rule's source IP address  "
+    ::= { mGuardSNMPFWRuleEntry 2 }
+
+    mGuardSNMPFWinterface OBJECT-TYPE
+     SYNTAX INTEGER {
+			extern(1)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The network interface the rule belongs to (extern/intern)."
+    ::= { mGuardSNMPFWRuleEntry 3}
+
+    mGuardSNMPFWtarget OBJECT-TYPE
+     SYNTAX INTEGER {
+			accept(1),
+			reject(2),
+			drop(3)
+		    }
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+       "The target of the rule (accept/reject/drop)."
+    ::= { mGuardSNMPFWRuleEntry 4}
+
+
+     mGuardSNMPFWlog OBJECT-TYPE
+      SYNTAX INTEGER {
+                       yes(1),
+                       no(2)
+                     }
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+        " Log packets matching this rule ?"
+      ::= { mGuardSNMPFWRuleEntry 5 }
+
+
+    mGuardSNMPFWRowStatus OBJECT-TYPE
+     SYNTAX RowStatus
+     ACCESS read-write
+     STATUS mandatory
+     DESCRIPTION
+      "RowStatus"
+    ::= { mGuardSNMPFWRuleEntry 6}
+
+--
+-- NTP Service
+--
+ 
+  mGuardNTPactivate OBJECT-TYPE 
+  SYNTAX INTEGER { yes(1),
+                   no(2)
+		 }
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION
+    "Activate NTP ?"
+  ::={ mGuardNTP 1 }
+  
+  mGuardNTPtimestamp OBJECT-TYPE
+   SYNTAX INTEGER  { 
+                      yes(1),
+		      no(2)
+		   }
+  ACCESS read-write
+  STATUS mandatory
+  DESCRIPTION
+    "Time stamp in filesystem ?"
+  ::={ mGuardNTP 2 }
+		   
+  mGuardNTPServerTable OBJECT-TYPE 
+    SYNTAX SEQUENCE OF MGuardNTPServerEntry 
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of NTP Servers."
+ ::= { mGuardNTP 3 }
+
+  mGuardNTPTimezone OBJECT-TYPE
+   SYNTAX DisplayString
+   ACCESS read-write
+   STATUS mandatory
+   DESCRIPTION
+     "Timezone in POSIX.1 notation"
+  ::={ mGuardNTP 4 }
+
+   mGuardNTPStatus OBJECT-TYPE
+     SYNTAX DisplayString
+     ACCESS read-only
+     STATUS mandatory
+     DESCRIPTION
+        "NTP state"
+  ::={ mGuardNTP 5 }
+
+
+  mGuardNTPServerEntry OBJECT-TYPE
+      SYNTAX MGuardNTPServerEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single NTP Server."
+      INDEX { mGuardNTPServerIndex }
+  ::= { mGuardNTPServerTable 1}
+ 
+  MGuardNTPServerEntry  ::= SEQUENCE {
+     mGuardNTPServerIndex INTEGER,
+     mGuardNTPServerHost DisplayString,
+     mGuardNTPServerRowStatus RowStatus
+  } 
+   
+  mGuardNTPServerIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..20)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index"
+   ::= { mGuardNTPServerEntry 1 }
+
+   mGuardNTPServerHost OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Hostname or IP address of the NTP Server."
+   ::= { mGuardNTPServerEntry 2 }
+
+   mGuardNTPServerRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row status"
+   ::= { mGuardNTPServerEntry 3 }
+
+--
+-- Update Server Table
+--
+
+  mGuardUpdateServerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardUpdateServerEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of update server repositories."
+   ::= { mGuardUpdate 1 }
+ 
+  mGuardUpdateServerEntry OBJECT-TYPE
+      SYNTAX MGuardUpdateServerEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single update server repository. "
+      INDEX { mGuardUpdateServerIndex }
+  ::= { mGuardUpdateServerTable 1}
+
+  MGuardUpdateServerEntry  ::= SEQUENCE {
+     mGuardUpdateServerIndex INTEGER,
+     mGuardUpdateServer  DisplayString,
+     mGuardUpdateServerRowStatus RowStatus
+  }
+
+  mGuardUpdateServerIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..20)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardUpdateServerEntry 1 }
+
+   mGuardUpdateServer OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Name of the update server."
+   ::= { mGuardUpdateServerEntry 2 }
+
+   mGuardUpdateServerRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardUpdateServerEntry 3 }
+
+--
+-- Logging
+--
+ 
+   mGuardLoggingRemoteActivate OBJECT-TYPE 
+       SYNTAX INTEGER
+                 {
+		   yes(1),
+                   no(2)
+		 }
+       ACCESS read-write
+       STATUS mandatory
+       DESCRIPTION
+          "Activate remote logging?"
+   ::={ mGuardLogging 1 }
+  
+   mGuardLoggingRemoteIP OBJECT-TYPE
+      SYNTAX IpAddress
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "IP address of the remote log server"
+   ::= { mGuardLogging 2}
+
+    mGuardLoggingRemotePort OBJECT-TYPE
+      SYNTAX DisplayString
+      ACCESS read-write
+      STATUS mandatory
+      DESCRIPTION
+         "UDP port of the remote logging service"
+     ::= { mGuardLogging 3 }
+
+--
+-- Error
+--
+
+   mGuardSNMPError OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-only
+    STATUS mandatory
+    DESCRIPTION
+       "Field, providing textual description of errors caused by SNMP
+       operations."   
+   ::= { mGuard 8 }
+
+--
+-- mGuardContFilt
+--
+
+  mGuardContFiltAVP    OBJECT IDENTIFIER ::= { mGuardContFilt 1 }
+  mGuardContFiltHTTP   OBJECT IDENTIFIER ::= { mGuardContFilt 2 }
+  mGuardContFiltPOP3   OBJECT IDENTIFIER ::= { mGuardContFilt 3 }
+  mGuardContFiltSMTP   OBJECT IDENTIFIER ::= { mGuardContFilt 4 }
+
+
+--
+-- mGuardContFiltAVP
+--
+
+   mGuardContFiltAVPSchedule OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+		onboot(-2),
+	        never(-1),
+		quarterhourly(15),
+		halfhourly(30),
+		hourly(60),
+		bihourly(120),
+		triplehourly(360),
+		sixhourly(720),
+		twicedayly(1440)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "The period used when updating the antivirus database"
+  ::= { mGuardContFiltAVP 1 }
+
+  mGuardContFiltAVPServerTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardContFiltAVPServerEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of update server repositories."
+   ::= { mGuardContFiltAVP 2 }
+ 
+  mGuardContFiltAVPServerEntry OBJECT-TYPE
+      SYNTAX MGuardContFiltAVPServerEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single update server repository. "
+      INDEX { mGuardContFiltAVPServerIndex }
+  ::= { mGuardContFiltAVPServerTable 1}
+
+  MGuardContFiltAVPServerEntry  ::= SEQUENCE {
+     mGuardContFiltAVPServerIndex INTEGER,
+     mGuardContFiltAVPServerProtocol INTEGER,
+     mGuardContFiltAVPServerURL  DisplayString,
+     mGuardContFiltAVPServerLogin  DisplayString,
+     mGuardContFiltAVPServerPassword  DisplayString,
+     mGuardContFiltAVPServerRowStatus RowStatus
+  }
+
+  mGuardContFiltAVPServerIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..100)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardContFiltAVPServerEntry 1 }
+
+  mGuardContFiltAVPServerProtocol OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        http(1),
+		ftp(2)
+              }
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Protocol used to access the update server."
+   ::= { mGuardContFiltAVPServerEntry 2 }
+
+   mGuardContFiltAVPServerURL OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "URL of the update server."
+   ::= { mGuardContFiltAVPServerEntry 3 }
+
+   mGuardContFiltAVPServerLogin OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Login to be supplied to the update server."
+   ::= { mGuardContFiltAVPServerEntry 4 }
+
+   mGuardContFiltAVPServerPassword OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Password to be supplied to the update server."
+   ::= { mGuardContFiltAVPServerEntry 5 }
+
+   mGuardContFiltAVPServerRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardContFiltAVPServerEntry 6 }
+
+--
+-- mGuardContFiltHTTP
+--
+
+   mGuardContFiltHTTPEnable OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        enable(1),
+		disable(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Enable HTTP procotol proxy"
+  ::= { mGuardContFiltHTTP 1 }
+
+   mGuardContFiltHTTPVirusAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        error(1)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Action to take on virus detection"
+  ::= { mGuardContFiltHTTP 2 }
+
+   mGuardContFiltHTTPMaxSize OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        dottwomeg(200000),
+	        dotfivemeg(500000),
+	        onemeg(1000000),
+	        twomeg(2000000),
+	        fivemeg(5000000)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Maximum object size to be handled"
+  ::= { mGuardContFiltHTTP 3 }
+
+   mGuardContFiltHTTPExceedAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        block(1),
+		pass(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Action to take if an object exceeds the maximum handled size"
+  ::= { mGuardContFiltHTTP 4}
+
+  mGuardContFiltHTTPSrvrTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardContFiltHTTPSrvrEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of update server repositories."
+   ::= { mGuardContFiltHTTP 5 }
+ 
+  mGuardContFiltHTTPSrvrEntry OBJECT-TYPE
+      SYNTAX MGuardContFiltHTTPSrvrEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single update server repository. "
+      INDEX { mGuardContFiltHTTPSrvrIndex }
+  ::= { mGuardContFiltHTTPSrvrTable 1}
+
+  MGuardContFiltHTTPSrvrEntry  ::= SEQUENCE {
+     mGuardContFiltHTTPSrvrIndex INTEGER,
+     mGuardContFiltHTTPSrvrIP DisplayString,
+     mGuardContFiltHTTPSrvrPort  DisplayString,
+     mGuardContFiltHTTPSrvrScanAction  INTEGER,
+     mGuardContFiltHTTPSrvrRowStatus RowStatus
+  }
+
+  mGuardContFiltHTTPSrvrIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..100)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardContFiltHTTPSrvrEntry 1 }
+
+   mGuardContFiltHTTPSrvrIP OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "IP address expression for http server(s)."
+   ::= { mGuardContFiltHTTPSrvrEntry 2 }
+
+   mGuardContFiltHTTPSrvrPort OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Port expression for http server(s)."
+   ::= { mGuardContFiltHTTPSrvrEntry 3 }
+
+  mGuardContFiltHTTPSrvrScanAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        scan(1),
+		noscan(2)
+              }
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Action to be taken when contacting respective servers."
+   ::= { mGuardContFiltHTTPSrvrEntry 4 }
+
+   mGuardContFiltHTTPSrvrRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardContFiltHTTPSrvrEntry 5 }
+
+--
+-- mGuardContFiltPOP3
+--
+
+   mGuardContFiltPOP3Enable OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        enable(1),
+		disable(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Enable POP3 procotol proxy"
+  ::= { mGuardContFiltPOP3 1 }
+
+   mGuardContFiltPOP3VirusAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        error(1),
+		mail(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Action to take on virus detection"
+  ::= { mGuardContFiltPOP3 2 }
+
+   mGuardContFiltPOP3MaxSize OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        dottwomeg(200000),
+	        dotfivemeg(500000),
+	        onemeg(1000000),
+	        twomeg(2000000),
+	        fivemeg(5000000)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Maximum object size to be handled"
+  ::= { mGuardContFiltPOP3 3 }
+
+   mGuardContFiltPOP3ExceedAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        block(1),
+		pass(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Action to take if an object exceeds the maximum handled size"
+  ::= { mGuardContFiltPOP3 4}
+
+  mGuardContFiltPOP3SrvrTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardContFiltPOP3SrvrEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of update server repositories."
+   ::= { mGuardContFiltPOP3 5 }
+ 
+  mGuardContFiltPOP3SrvrEntry OBJECT-TYPE
+      SYNTAX MGuardContFiltPOP3SrvrEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single update server repository. "
+      INDEX { mGuardContFiltPOP3SrvrIndex }
+  ::= { mGuardContFiltPOP3SrvrTable 1}
+
+  MGuardContFiltPOP3SrvrEntry  ::= SEQUENCE {
+     mGuardContFiltPOP3SrvrIndex INTEGER,
+     mGuardContFiltPOP3SrvrIP DisplayString,
+     mGuardContFiltPOP3SrvrPort  DisplayString,
+     mGuardContFiltPOP3SrvrScanAction  INTEGER,
+     mGuardContFiltPOP3SrvrRowStatus RowStatus
+  }
+
+  mGuardContFiltPOP3SrvrIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..100)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardContFiltPOP3SrvrEntry 1 }
+
+   mGuardContFiltPOP3SrvrIP OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "IP address expression for http server(s)."
+   ::= { mGuardContFiltPOP3SrvrEntry 2 }
+
+   mGuardContFiltPOP3SrvrPort OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Port expression for http server(s)."
+   ::= { mGuardContFiltPOP3SrvrEntry 3 }
+
+  mGuardContFiltPOP3SrvrScanAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        scan(1),
+		noscan(2)
+              }
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Action to be taken when contacting respective servers."
+   ::= { mGuardContFiltPOP3SrvrEntry 4 }
+
+   mGuardContFiltPOP3SrvrRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardContFiltPOP3SrvrEntry 5 }
+
+--
+-- mGuardContFiltSMTP
+--
+
+   mGuardContFiltSMTPEnable OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        enable(1),
+		disable(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Enable SMTP procotol proxy"
+  ::= { mGuardContFiltSMTP 1 }
+
+   mGuardContFiltSMTPVirusAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        error(1)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Action to take on virus detection"
+  ::= { mGuardContFiltSMTP 2 }
+
+   mGuardContFiltSMTPMaxSize OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        dottwomeg(200000),
+	        dotfivemeg(500000),
+	        onemeg(1000000),
+	        twomeg(2000000),
+	        fivemeg(5000000)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Maximum object size to be handled"
+  ::= { mGuardContFiltSMTP 3 }
+
+   mGuardContFiltSMTPExceedAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        block(1),
+		pass(2)
+	      }
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+       "Action to take if an object exceeds the maximum handled size"
+  ::= { mGuardContFiltSMTP 4}
+
+  mGuardContFiltSMTPSrvrTable OBJECT-TYPE
+    SYNTAX SEQUENCE OF MGuardContFiltSMTPSrvrEntry
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "A table of update server repositories."
+   ::= { mGuardContFiltSMTP 5 }
+ 
+  mGuardContFiltSMTPSrvrEntry OBJECT-TYPE
+      SYNTAX MGuardContFiltSMTPSrvrEntry
+      ACCESS not-accessible
+      STATUS mandatory
+      DESCRIPTION
+       "A single update server repository. "
+      INDEX { mGuardContFiltSMTPSrvrIndex }
+  ::= { mGuardContFiltSMTPSrvrTable 1}
+
+  MGuardContFiltSMTPSrvrEntry  ::= SEQUENCE {
+     mGuardContFiltSMTPSrvrIndex INTEGER,
+     mGuardContFiltSMTPSrvrIP DisplayString,
+     mGuardContFiltSMTPSrvrPort  DisplayString,
+     mGuardContFiltSMTPSrvrScanAction  INTEGER,
+     mGuardContFiltSMTPSrvrRowStatus RowStatus
+  }
+
+  mGuardContFiltSMTPSrvrIndex OBJECT-TYPE
+    SYNTAX INTEGER (1..100)
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Table index."
+   ::= { mGuardContFiltSMTPSrvrEntry 1 }
+
+   mGuardContFiltSMTPSrvrIP OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "IP address expression for http server(s)."
+   ::= { mGuardContFiltSMTPSrvrEntry 2 }
+
+   mGuardContFiltSMTPSrvrPort OBJECT-TYPE
+    SYNTAX DisplayString
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Port expression for http server(s)."
+   ::= { mGuardContFiltSMTPSrvrEntry 3 }
+
+  mGuardContFiltSMTPSrvrScanAction OBJECT-TYPE
+    SYNTAX INTEGER
+              {
+	        scan(1),
+		noscan(2)
+              }
+    ACCESS not-accessible
+    STATUS mandatory
+    DESCRIPTION
+      "Action to be taken when contacting respective servers."
+   ::= { mGuardContFiltSMTPSrvrEntry 4 }
+
+   mGuardContFiltSMTPSrvrRowStatus OBJECT-TYPE
+    SYNTAX RowStatus
+    ACCESS read-write
+    STATUS mandatory
+    DESCRIPTION
+      "Row Status"
+   ::= { mGuardContFiltSMTPSrvrEntry 5 }
+
+END

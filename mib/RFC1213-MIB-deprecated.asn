@@ -1,0 +1,130 @@
+-- NetEdit II
+-- SNMPv1 MIB-2v2 (only the deprecated Address Translation group subset)
+-- ASN.1 from RFC 1213
+-- copy'n pasted 2003 by mhopf@mark13.de
+
+RFC1213-MIB DEFINITIONS ::= BEGIN
+
+  IMPORTS
+          mgmt, NetworkAddress, IpAddress, Counter, Gauge,
+                  TimeTicks
+              FROM RFC1155-SMI
+          OBJECT-TYPE
+                  FROM RFC-1212;
+
+  --  This MIB module uses the extended OBJECT-TYPE macro as
+  --  defined in [14];
+
+
+  --  MIB-II (same prefix as MIB-I)
+
+  mib-2      OBJECT IDENTIFIER ::= { mgmt 1 }
+
+  -- groups in MIB-II
+
+  at           OBJECT IDENTIFIER ::= { mib-2 3 }
+
+  -- the Address Translation group
+
+  -- Implementation of the Address Translation group is
+  -- mandatory for all systems.  Note however that this group
+  -- is deprecated by MIB-II. That is, it is being included
+  -- solely for compatibility with MIB-I nodes, and will most
+  -- likely be excluded from MIB-III nodes.  From MIB-II and
+  -- onwards, each network protocol group contains its own
+  -- address translation tables.
+
+  -- The Address Translation group contains one table which is
+  -- the union across all interfaces of the translation tables
+  -- for converting a NetworkAddress (e.g., an IP address) into
+  -- a subnetwork-specific address.  For lack of a better term,
+  -- this document refers to such a subnetwork-specific address
+  -- as a `physical' address.
+
+  -- Examples of such translation tables are: for broadcast
+  -- media where ARP is in use, the translation table is
+  -- equivalent to the ARP cache; or, on an X.25 network where
+  -- non-algorithmic translation to X.121 addresses is
+  -- required, the translation table contains the
+  -- NetworkAddress to X.121 address equivalences.
+
+  atTable OBJECT-TYPE
+      SYNTAX  SEQUENCE OF AtEntry
+      ACCESS  not-accessible
+      STATUS  deprecated
+      DESCRIPTION
+              "The Address Translation tables contain the
+              NetworkAddress to `physical' address equivalences.
+              Some interfaces do not use translation tables for
+              determining address equivalences (e.g., DDN-X.25
+              has an algorithmic method); if all interfaces are
+              of this type, then the Address Translation table
+              is empty, i.e., has zero entries."
+      ::= { at 1 }
+
+  atEntry OBJECT-TYPE
+      SYNTAX  AtEntry
+      ACCESS  not-accessible
+      STATUS  deprecated
+      DESCRIPTION
+              "Each entry contains one NetworkAddress to
+              `physical' address equivalence."
+      INDEX   { atIfIndex,
+                atNetAddress }
+      ::= { atTable 1 }
+
+  AtEntry ::=
+      SEQUENCE {
+          atIfIndex
+              INTEGER,
+          atPhysAddress
+              PhysAddress,
+          atNetAddress
+              NetworkAddress
+      }
+
+  atIfIndex OBJECT-TYPE
+      SYNTAX  INTEGER
+      ACCESS  read-write
+      STATUS  deprecated
+      DESCRIPTION
+              "The interface on which this entry's equivalence
+              is effective.  The interface identified by a
+              particular value of this index is the same
+              interface as identified by the same value of
+              ifIndex."
+      ::= { atEntry 1 }
+
+  atPhysAddress OBJECT-TYPE
+      SYNTAX  PhysAddress
+      ACCESS  read-write
+      STATUS  deprecated
+      DESCRIPTION
+              "The media-dependent `physical' address.
+
+              Setting this object to a null string (one of zero
+              length) has the effect of invaliding the
+              corresponding entry in the atTable object.  That
+              is, it effectively dissasociates the interface
+              identified with said entry from the mapping
+              identified with said entry.  It is an
+              implementation-specific matter as to whether the
+              agent removes an invalidated entry from the table.
+              Accordingly, management stations must be prepared
+              to receive tabular information from agents that
+              corresponds to entries not currently in use.
+              Proper interpretation of such entries requires
+              examination of the relevant atPhysAddress object."
+      ::= { atEntry 2 }
+
+  atNetAddress OBJECT-TYPE
+      SYNTAX  NetworkAddress
+      ACCESS  read-write
+      STATUS  deprecated
+      DESCRIPTION
+              "The NetworkAddress (e.g., the IP address)
+              corresponding to the media-dependent `physical'
+              address."
+      ::= { atEntry 3 }
+
+END

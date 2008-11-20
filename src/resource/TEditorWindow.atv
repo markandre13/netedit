@@ -1,0 +1,34 @@
+toad::TSpringLayout {
+  neteditor = {
+    top = { 
+      how = border 
+    }
+    bottom = {
+      how = window
+      where = maplist
+    }
+    left = {
+      how = border
+    }
+    right = {
+      how = border
+    }
+  }
+  maplist = { 
+    left = {
+      how = border
+      distance = 0
+    }
+    right = {
+      how = border
+      distance = 18
+    }
+    top = {
+      distance = 2
+    }
+    bottom = {
+      how = border
+      distance = 0
+    }
+  }
+}

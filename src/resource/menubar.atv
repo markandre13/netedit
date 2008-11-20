@@ -1,0 +1,165 @@
+// this is a generated file
+
+toad::TMenuLayout {
+  scope = "toplevel"
+  toad::TMenuEntry {
+    name = "file"
+    label = "File"
+    shortcut = ""
+    icon = ""
+    toad::TMenuEntry {
+      name = "new"
+      label = "New"
+      shortcut = "Alt+N"
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "newview"
+      label = "New View"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "open"
+      label = "Open"
+      shortcut = "Alt+O"
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "save"
+      label = "Save"
+      shortcut = "Alt+S"
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "save_as"
+      label = "Save As..."
+      shortcut = "Alt+A"
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "close"
+      label = "Close"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuSeparator { }
+    toad::TMenuEntry {
+      name = "print"
+      label = "Print"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuSeparator { }
+    toad::TMenuEntry {
+      name = "quit"
+      label = "Quit"
+      shortcut = "Alt+F4"
+      icon = "exit.png"
+    }
+    toad::TMenuSeparator { }
+    toad::TMenuEntry {
+      name = "new_1"
+      label = "Window with textfield"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "new_2"
+      label = "Window without textfield"
+      shortcut = ""
+      icon = ""
+    }
+  }
+  toad::TMenuEntry {
+    name = "edit"
+    label = "Edit"
+    shortcut = ""
+    icon = ""
+    toad::TMenuEntry {
+      name = "undo"
+      label = "Undo"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "redo"
+      label = "Redo"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuSeparator { }
+    toad::TMenuEntry {
+      name = "cut"
+      label = "Cut"
+      shortcut = "Alt+X"
+      icon = "editcut.png"
+    }
+    toad::TMenuEntry {
+      name = "copy"
+      label = "Copy"
+      shortcut = "Alt+C"
+      icon = "editcopy.png"
+    }
+    toad::TMenuEntry {
+      name = "paste"
+      label = "Paste"
+      shortcut = "Alt+V"
+      icon = "editpaste.png"
+    }
+    toad::TMenuEntry {
+      name = "delete"
+      label = "Delete"
+      shortcut = ""
+      icon = ""
+    }
+  }
+  toad::TMenuEntry {
+    name = "topology"
+    label = "Topology"
+    shortcut = ""
+    icon = ""
+    toad::TMenuEntry {
+      name = "networks"
+      label = "Edit Networks"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "nodes"
+      label = "Edit Nodes"
+      shortcut = ""
+      icon = ""
+    }
+  }
+  toad::TMenuEntry {
+    name = "view"
+    label = "View"
+    shortcut = ""
+    icon = ""
+  }
+  toad::TMenuEntry {
+    name = "rights"
+    label = "Rights"
+    shortcut = ""
+    icon = ""
+  }
+  toad::TMenuEntry {
+    name = "help"
+    label = "Help"
+    shortcut = ""
+    icon = ""
+    toad::TMenuEntry {
+      name = "manual"
+      label = "Show Manual"
+      shortcut = ""
+      icon = ""
+    }
+    toad::TMenuEntry {
+      name = "about"
+      label = "About"
+      shortcut = ""
+      icon = ""
+    }
+  }
+}
